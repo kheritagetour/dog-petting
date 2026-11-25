@@ -132,7 +132,17 @@ dialog.gacha::backdrop{background:rgba(30,20,10,.5)}
 @keyframes wob{to{transform:rotate(3deg) scale(1.03)}}
 @keyframes reveal{from{transform:rotateY(90deg) scale(.8)}}
 .treat.unknown{background:linear-gradient(145deg,#ffe3a3,#ffb9ab);box-shadow:none;display:grid;place-items:center;font-family:var(--display);font-size:24px;color:#fff}
+[hidden]{display:none!important}
 .text-btn.g-charge{display:block;margin:10px auto 0;background:linear-gradient(135deg,#9fd8ff,#b9a6ff);color:#1f2340;font-family:var(--display)}
+.photo-pick{display:grid;place-items:center;margin:10px 0;min-height:120px;border-radius:16px;border:2px dashed var(--line);cursor:pointer;overflow:hidden;position:relative;background:var(--bg)}
+.photo-pick input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.photo-pick img{width:100%;max-height:220px;object-fit:contain;display:block}
+.photo-pick span{font-family:var(--display);font-size:16px;color:var(--muted)}
+.m-form{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px;margin-top:8px}
+.m-form label{display:grid;gap:4px;font-size:12px;color:var(--muted)}
+.m-form input[type=text],.m-form select{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:7px 8px}
+.m-form input[type=color]{width:100%;height:36px;border:1px solid var(--line);border-radius:10px;background:var(--bg);padding:2px}
+.swatch.add{display:grid;place-items:center;font-size:24px;color:var(--muted);background:var(--chip)}
 .g-odds{margin-top:12px;font-size:13px}
 .g-odds.mini{margin-top:14px;font-size:11px;text-align:right}
 .g-odds.mini summary{opacity:.6;list-style:none}
@@ -228,6 +238,26 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
     <button class="text-btn g-charge" id="gCharge" hidden>💎 다이아 충전하러 가기</button>
     <details class="g-odds mini"><summary>확률 정보</summary><p class="g-note" style="text-align:left">1회 뽑기에 간식 3개가 나오고, 3개 모두 아래 확률로 각각 따로 뽑혀요. 에픽이 나오면 70%는 그 주 픽업 간식이에요. 9회 연속 에픽 이상이 없으면 10회째에 1개, 39회 연속 전설이 없으면 40회째에 전설 1개가 확정돼요.</p><table id="gOdds"></table></details>
   </dialog>
+  <dialog class="gacha mine" id="mineDlg" aria-labelledby="mineTitle">
+    <div class="g-head"><h2 id="mineTitle">우리 강아지 만들기</h2>
+      <button class="icon" id="mClose" aria-label="닫기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+    <p class="g-note" id="mPrivacy">사진에서 털 색을 이 브라우저 안에서 뽑아요. 사진은 저장하지 않아요.</p>
+    <label class="photo-pick"><input type="file" accept="image/jpeg,image/png,image/webp,image/gif" id="mPhoto"><img id="mPreview" alt="고른 강아지 사진" hidden><span id="mPickTxt">📷 강아지 사진 고르기</span></label>
+    <button class="text-btn g-charge" id="mAI" hidden>✨ Claude가 사진 보고 맞추기</button>
+    <p class="g-note" id="mAIMsg" aria-live="polite"></p>
+    <div class="m-form">
+      <label>이름<input type="text" id="mName" maxlength="10" placeholder="우리 강아지"></label>
+      <label>털 색<input type="color" id="mBase" value="#d7843d"></label>
+      <label>무늬 색<input type="color" id="mMark" value="#f7ebda"></label>
+      <label>무늬<select id="mMarks"><option value="1">주둥이·가슴·발</option><option value="0">없음</option></select></label>
+      <label>귀<select id="mEars"><option value="erect">쫑긋 선 귀</option><option value="drape">축 처진 귀</option></select></label>
+      <label>꼬리<select id="mTail"><option value="over">말린 꼬리</option><option value="floor">늘어진 꼬리</option><option value="stub">짧은 꼬리</option></select></label>
+      <label>크기<select id="mSize"><option value="small">작아요</option><option value="medium" selected>보통</option><option value="large">커요</option></select></label>
+      <label>털 길이<select id="mFur"><option value="short">짧아요</option><option value="medium" selected>보통</option><option value="long">길고 풍성해요</option></select></label>
+      <label>주둥이<select id="mMuzzle"><option value="medium">보통</option><option value="short">짧아요</option></select></label>
+    </div>
+    <button class="g-pull" id="mMake">이 모습으로 데려오기</button>
+  </dialog>
   <dialog class="gacha shop" id="shop" aria-labelledby="shopTitle">
     <div class="g-head"><h2 id="shopTitle">상점</h2>
       <button class="icon" id="sClose" aria-label="닫기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
@@ -289,7 +319,19 @@ const TREATS={
   liver:{name:'소간 트릿',r:'epic',mood:.28,full:.16,xp:10,say:'고소한 소간… 행복해요!'},
   churu:{name:'츄르',r:'legend',mood:.42,full:.08,xp:16,say:'츄르르릅… 여기가 천국인가요!'},
 };
-const FAV_TREAT={maltese:'apple',shiba:'potato',pom:'churu',corgi:'jerky',husky:'salmon',chihuahua:'cheese'};
+const FAV_TREAT={maltese:'apple',shiba:'potato',pom:'churu',corgi:'jerky',husky:'salmon',chihuahua:'cheese',mine:'jerky'};
+const josa=(w,a,b)=>{const c=w.charCodeAt(w.length-1);return c>=0xAC00&&c<=0xD7A3&&(c-0xAC00)%28?a:b};
+// 사진으로 만든 우리 강아지: 몇 가지 값으로 견종 데이터를 만듦
+function breedFromParams(m){
+  const name=(m.name||'').trim()||'우리 강아지';
+  const fur={short:[.018,140,.95],medium:[.032,112,1.05],long:[.058,95,1.22]}[m.fur]||[.032,112,1.05];
+  const small=m.size==='small';
+  const tail={over:{type:'over',len:1,plume:m.fur==='long'?1.7:.9,th0:1.15,curl:2.8},floor:{type:'floor',len:1,plume:m.fur==='long'?1.2:.5,curl:1},stub:{type:'stub'}}[m.tail]||{type:'stub'};
+  return{name,subj:name+josa(name,'이','가'),s:{small:.7,medium:.9,large:1.06}[m.size]||.9,base:m.base,mark:m.mark,eye:'#1d1512',
+    len:small?.9:1,w:1,leg:small?.85:1,head:small?1.15:1,mz:m.muzzle==='short'?.45:1,mzw:1,fluff:fur[2],
+    ears:{kind:m.ears==='drape'?'drape':'erect',size:m.ears==='drape'?1.05:small?1.15:.9},tail,marks:m.marks?['muzzle','chest','paws']:[],
+    collar:'#e0607e',inner:'#f1c8bc',fav:'head',fur:fur[0],furDen:fur[1],custom:true};
+}
 const LV=[0,20,55,110,190,300,450],TITLES=['처음 본 사이','아는 사이','친구','단짝','베프','가족','영혼의 단짝'];
 const lvOf=x=>{let l=0;while(l<LV.length-1&&x>=LV[l+1])l++;return l};
 // 재화: 🦴 뼈다귀(놀면서 모음) · 💎 다이아(상점에서 충전) · 🎫 뽑기권
@@ -897,6 +939,7 @@ const defaultSave=()=>({coins:0,dia:0,tix:0,free:1,inv:{biscuit:2},seen:{biscuit
 let save=defaultSave();
 try{const v=JSON.parse(localStorage.getItem(SAVE_KEY));if(v&&typeof v==='object')save=Object.assign(defaultSave(),v)}catch{}
 for(const k in save.inv)if(save.inv[k]>0)save.seen[k]=true;
+if(save.mine)BREEDS.mine=breedFromParams(save.mine);
 function persist(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(save))}catch{}}
 const level=()=>lvOf(save.xp[B.key]||0);
 
@@ -1494,9 +1537,11 @@ for(const[key,b]of Object.entries(BREEDS)){
   btn.addEventListener('click',()=>selectBreed(key));
   breedsEl.append(btn);
 }
+const addBtn=document.createElement('button');addBtn.className='swatch add';addBtn.textContent='+';addBtn.title='우리 강아지 만들기';addBtn.setAttribute('aria-label','사진으로 우리 강아지 만들기');
+breedsEl.append(addBtn);
 function selectBreed(key){
   buildDog(key);
-  for(const b of breedsEl.querySelectorAll('button'))b.setAttribute('aria-pressed',String(b.dataset.breed===key));
+  for(const b of breedsEl.querySelectorAll('button[data-breed]'))b.setAttribute('aria-pressed',String(b.dataset.breed===key));
   store.set('dog-petting-breed',key);lastMsg='';msgAt=-9;
 }
 function selectTool(k){
@@ -1608,6 +1653,82 @@ document.getElementById('gCharge').addEventListener('click',()=>{gDlg.close();op
   const pr=T.r==='epic'?R0.p*(k===PICKUP?.7:.3):R0.p/cnt;
   return`<tr><td><span class="rk" style="--rc:${R0.col}">${R0.name}</span> ${save.seen[k]?T.name:'???'}${k===PICKUP?' (픽업)':''}</td><td>${(pr*100).toFixed(1)}%</td></tr>`});
   document.getElementById('gOdds').innerHTML=rows.join('')}
+// ---------- 우리 강아지 만들기 ----------
+const mDlg=document.getElementById('mineDlg'),mPhoto=document.getElementById('mPhoto'),mPreview=document.getElementById('mPreview'),mAI=document.getElementById('mAI'),mAIMsg=document.getElementById('mAIMsg');
+const mf=id=>document.getElementById(id);
+let mFile=null,sampleFn=null;
+function thumbOne(b){
+  try{
+    const r2=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});r2.setPixelRatio(1);r2.setSize(120,120,false);r2.toneMapping=THREE.ACESFilmicToneMapping;
+    const sc=new THREE.Scene(),pm=new THREE.PMREMGenerator(r2);sc.environment=pm.fromScene(new RoomEnvironment(),.04).texture;sc.environmentIntensity=.55;sc.background=new THREE.Color('#efe5d8');
+    sc.add(new THREE.HemisphereLight('#fff6ea','#b48a64',1));const k=new THREE.DirectionalLight('#fff0dc',2.4);k.position.set(-1.5,2,2.5);sc.add(k);
+    const cam=new THREE.PerspectiveCamera(30,1,.05,20),saved=[FU.furLen.value,FU.furDen.value];FU.furLen.value=b.fur;FU.furDen.value=b.furDen;
+    const d=makeDog(b);d.root.rotation.y=-.4;sc.add(d.root);d.root.updateMatrixWorld(true);
+    const c=V3();d.head.getWorldPosition(c);c.y+=.05*b.head*(b.ears.kind==='erect'?b.ears.size*.6:0)+.02;
+    cam.position.copy(c).addScaledVector(V3(.25,.12,1).normalize(),1.25*b.head*(1+Math.max(0,b.ears.size-1)*.35));cam.lookAt(c);
+    r2.render(sc,cam);const url=r2.domElement.toDataURL();disposeDog(d);[FU.furLen.value,FU.furDen.value]=saved;pm.dispose();r2.dispose();r2.forceContextLoss();return url;
+  }catch{return''}
+}
+function addMineSwatch(){
+  let btn=breedsEl.querySelector('[data-breed="mine"]');
+  if(!btn){btn=document.createElement('button');btn.className='swatch';btn.dataset.breed='mine';btn.addEventListener('click',()=>selectBreed('mine'));breedsEl.insertBefore(btn,addBtn)}
+  const b=BREEDS.mine;btn.setAttribute('aria-label',b.name);btn.title=b.name;
+  const u=thumbOne(b);btn.style.backgroundImage=u?`url(${u})`:`radial-gradient(circle at 35% 35%,${b.mark},${b.base} 60%)`;
+}
+// 사진 가운데 부분의 색을 묶어(k-means) 가장 많은 색 = 털 색, 그와 다른 밝은 색 = 무늬 색
+function photoColors(img){
+  const N=48,c=document.createElement('canvas');c.width=c.height=N;const g=c.getContext('2d',{willReadFrequently:true});
+  const s=Math.min(img.naturalWidth,img.naturalHeight)*.7;g.drawImage(img,(img.naturalWidth-s)/2,(img.naturalHeight-s)/2,s,s,0,0,N,N);
+  const d=g.getImageData(0,0,N,N).data,px=[];
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){const w=1-Math.hypot(x/N-.5,y/N-.5)*1.4;if(w<=0)continue;const i=(y*N+x)*4;px.push([d[i],d[i+1],d[i+2],w])}
+  let C=[[200,130,70],[245,240,230],[60,50,45],[150,150,150]];
+  for(let it=0;it<10;it++){const acc=C.map(()=>[0,0,0,0]);
+    for(const p of px){let bi=0,bd=1e9;C.forEach((q,k)=>{const dd=(p[0]-q[0])**2+(p[1]-q[1])**2+(p[2]-q[2])**2;if(dd<bd){bd=dd;bi=k}});const a=acc[bi];a[0]+=p[0]*p[3];a[1]+=p[1]*p[3];a[2]+=p[2]*p[3];a[3]+=p[3]}
+    C=C.map((q,k)=>acc[k][3]?[acc[k][0]/acc[k][3],acc[k][1]/acc[k][3],acc[k][2]/acc[k][3],acc[k][3]]:[...q.slice(0,3),0])}
+  C.sort((a,b)=>b[3]-a[3]);
+  const hex=q=>'#'+q.slice(0,3).map(v=>Math.round(clamp(v,0,255)).toString(16).padStart(2,'0')).join('');
+  const lum=q=>.3*q[0]+.59*q[1]+.11*q[2];
+  const base=C[0],mark=C.slice(1).find(q=>q[3]>C[0][3]*.12&&Math.hypot(q[0]-base[0],q[1]-base[1],q[2]-base[2])>70&&lum(q)>lum(base))||null;
+  return{base:hex(base),mark:mark?hex(mark):hex(base.map((v,i)=>i<3?v+(255-v)*.55:v)),marks:!!mark};
+}
+mPhoto.addEventListener('change',()=>{
+  const f=mPhoto.files&&mPhoto.files[0];if(!f)return;mFile=f;
+  const url=URL.createObjectURL(f);mPreview.onload=()=>{try{const c=photoColors(mPreview);mf('mBase').value=c.base;mf('mMark').value=c.mark;mf('mMarks').value=c.marks?'1':'0'}catch{}};
+  mPreview.src=url;mPreview.hidden=false;mf('mPickTxt').hidden=true;mAI.disabled=false;mAIMsg.textContent='';
+});
+const pickOpt=(v,ok,d)=>ok.includes(v)?v:d,isHex=v=>/^#[0-9a-f]{6}$/i.test(String(v));
+mAI.addEventListener('click',async()=>{
+  if(!sampleFn||!mFile)return;mAI.disabled=true;mAIMsg.textContent='Claude가 사진을 보고 있어요…';
+  try{
+    const r=await sampleFn.json('이 사진 속 강아지를 귀여운 3D 장난감 강아지로 만들려고 해요. 아래 형식의 JSON 하나만 답해 주세요.\n'+
+      '{"breed":"견종 추정(한국어, 모르면 믹스)","base":"#rrggbb 가장 넓은 털 색","mark":"#rrggbb 주둥이·가슴·발의 밝은 털 색(없으면 base보다 밝게)","marks":true|false,'+
+      '"ears":"erect|drape","tail":"over|floor|stub","size":"small|medium|large","fur":"short|medium|long","muzzle":"short|medium"}\n'+
+      'tail: over=등 위로 말린 꼬리, floor=아래로 늘어진 꼬리, stub=짧거나 안 보이는 꼬리. 사진에 강아지가 없으면 {"error":"no_dog"}만 답해 주세요.',{images:[mFile],modelTier:'quick'});
+    if(!r||r.error){mAIMsg.textContent='사진에서 강아지를 찾지 못했어요. 직접 골라 주세요.';return}
+    if(isHex(r.base))mf('mBase').value=r.base;if(isHex(r.mark))mf('mMark').value=r.mark;
+    mf('mMarks').value=r.marks?'1':'0';mf('mEars').value=pickOpt(r.ears,['erect','drape'],'erect');mf('mTail').value=pickOpt(r.tail,['over','floor','stub'],'over');
+    mf('mSize').value=pickOpt(r.size,['small','medium','large'],'medium');mf('mFur').value=pickOpt(r.fur,['short','medium','long'],'medium');mf('mMuzzle').value=pickOpt(r.muzzle,['short','medium'],'medium');
+    mAIMsg.textContent=`${String(r.breed||'믹스').slice(0,20)} 같아요! 아래에서 더 고칠 수 있어요.`;
+  }catch(e){
+    if(['not_granted','sampling_disabled','not_declared','capability_disabled','capability_removed','images_unavailable'].includes(e&&e.code)){mAI.hidden=true;mAIMsg.textContent='직접 골라 주세요.'}
+    else mAIMsg.textContent=e&&e.code==='rate_limited'?'잠시 뒤에 다시 해 주세요.':'분석하지 못했어요. 직접 골라 주세요.';
+  }finally{mAI.disabled=false}
+});
+addBtn.addEventListener('click',()=>{
+  const m=save.mine;if(m){mf('mName').value=m.name||'';for(const[k,id]of[['base','mBase'],['mark','mMark'],['ears','mEars'],['tail','mTail'],['size','mSize'],['fur','mFur'],['muzzle','mMuzzle']])mf(id).value=m[k];mf('mMarks').value=m.marks?'1':'0'}
+  try{mDlg.showModal()}catch{mDlg.setAttribute('open','')}
+});
+mf('mClose').addEventListener('click',()=>mDlg.close());
+mf('mMake').addEventListener('click',()=>{
+  const m={name:mf('mName').value.slice(0,10),base:mf('mBase').value,mark:mf('mMark').value,marks:mf('mMarks').value==='1',ears:mf('mEars').value,tail:mf('mTail').value,size:mf('mSize').value,fur:mf('mFur').value,muzzle:mf('mMuzzle').value};
+  save.mine=m;persist();BREEDS.mine=breedFromParams(m);addMineSwatch();selectBreed('mine');mDlg.close();
+  setTimeout(()=>say(`안녕! 나는 ${BREEDS.mine.name}! 잘 부탁해요!`,3.5),400);
+});
+(async()=>{
+  try{if(typeof claude==='undefined'||!claude.use)return;const sm=await claude.use('sample');if(!sm)return;
+    const lim=await sm.limits().catch(()=>null);if(!lim||!lim.images)return;sampleFn=sm;mAI.hidden=false;mAI.disabled=true;
+    mf('mPrivacy').textContent='털 색은 이 브라우저 안에서 뽑아요. "Claude가 맞추기"를 누를 때만 사진이 Claude에게 전달되고, 저장은 하지 않아요.'}catch{}
+})();
 // ---------- 상점 ----------
 const sDlg=document.getElementById('shop'),shopBody=document.getElementById('shopBody');
 const won=n=>'₩'+n.toLocaleString('ko-KR');
