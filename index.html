@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="ko">
 <head>
-<title>쓰담쓰담 멍멍</title>
 <meta charset="utf-8">
+<title>쓰담쓰담 멍멍</title>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <style>*,*::before,*::after{box-sizing:border-box}body{margin:0}</style>
 </head>
@@ -118,6 +118,7 @@ setTimeout(()=>{if(!window.__dogReady){const m=document.getElementById('msg');if
 import * as THREE from 'three';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -201,8 +202,8 @@ ${NOISE}
 `+sh.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
 float nz=vn(vRest*20.)*.6+vn(vRest*52.)*.4;
 float dAmt=clamp(vState.x,0.,1.);
-float dm=smoothstep(.03,.2,dAmt+(nz-.5)*.22)*pow(smoothstep(0.,.55,dAmt),.8);
-dm=max(dm,step(.8,vn(vRest*75.))*smoothstep(.08,.3,dAmt)*dAmt*1.4);
+float dm=smoothstep(.03,.2,dAmt+(nz-.5)*.22)*smoothstep(.03,.65,dAmt);
+dm=max(dm,step(.8,vn(vRest*75.))*smoothstep(.18,.45,dAmt)*dAmt);
 float lm=clamp(vState.y*1.6,0.,1.);
 float fm=smoothstep(.12,.55,vState.w+(nz-.5)*.35);
 float wt=clamp(vState.z,0.,1.);
@@ -266,6 +267,13 @@ function updateStates(){
 // ---------- 강아지 만들기 (구, 캡슐, 원뿔을 이어 붙인 둥근 장난감 느낌) ----------
 const SPH=new THREE.SphereGeometry(1,40,28);
 const SPH_LO=new THREE.SphereGeometry(1,14,10);
+// 끝이 둥근 귀 (아래가 0, 위가 1)
+const EAR_GEO=new THREE.LatheGeometry([[1,0],[.97,.2],[.86,.42],[.66,.64],[.42,.82],[.2,.94],[0,1]].map(([x,y])=>new THREE.Vector2(x,y)),32);
+const BLUSH_GEO=new THREE.CircleGeometry(.05,24);BLUSH_GEO.scale(1.25,.8,1);
+const blushMat=new THREE.MeshBasicMaterial({transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,
+  map:(()=>{const c=document.createElement('canvas');c.width=c.height=64;const g=c.getContext('2d'),gr=g.createRadialGradient(32,32,2,32,32,32);
+    gr.addColorStop(0,'rgba(255,128,150,.75)');gr.addColorStop(1,'rgba(255,128,150,0)');g.fillStyle=gr;g.fillRect(0,0,64,64);
+    const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t})()});
 function makeDog(B){
   const d={meshes:[],fur:[],ears:[],eyes:[],B};
   const mats={};
@@ -302,6 +310,7 @@ function makeDog(B){
     const len=.36*lg,z0=.42*Lz;
     add(body,new THREE.CapsuleGeometry(.085,len,8,20),fm(has('legs')?mk:base),[sx*.15*Bw,.09,z0+len/2],[1,1,1],'paw',{rot:[Math.PI/2,0,0]});
     add(body,SPH,fm(has('paws')||has('legs')?mk:base),[sx*.15*Bw,.075,z0+len+.05],[.1,.075,.13],'paw');
+    for(const tx of[-.048,0,.048])add(body,SPH,fm(has('paws')||has('legs')?mk:base),[sx*.15*Bw+tx,.085,z0+len+.135],[.038,.04,.038],'paw');
   }
   // 목줄과 이름표
   const collar=add(body,new THREE.TorusGeometry(.205,.032,14,44),plain(B.collar,.5,{clearcoat:.3}),[0,.6,.49*Lz],[1.12*fl,1.06*fl,1],'collar',{fur:false,rot:[-1.02,0,0]});
@@ -310,7 +319,7 @@ function makeDog(B){
 
   // 머리
   const hp=d.headPivot=new THREE.Group();hp.position.set(0,.68,.5*Lz);body.add(hp);
-  const head=d.head=new THREE.Group();head.position.set(0,.2,.16);head.scale.setScalar(hd);hp.add(head);
+  const head=d.head=new THREE.Group();head.position.set(0,.22,.17);head.scale.setScalar(hd*1.16);hp.add(head);
   add(head,SPH,fm(has('mask')?mk:base),[0,0,0],[.27,.245,.25],'skull');
   if(has('mask'))add(head,SPH,fm(dk),[0,.08,-.035],[.262,.185,.235],'skull');
   if(B.tuft)add(head,SPH,fm(base),[0,.17,-.02],[.17,.1,.16],'skull');
@@ -320,16 +329,22 @@ function makeDog(B){
   add(head,SPH,plain('#231a17',.32,{clearcoat:.8,clearcoatRoughness:.3}),[0,-.042,mzZ+mzL-.005],[.052,.038,.04],'muzzle',{fur:false});
   if(has('brows'))for(const sx of[-1,1])add(head,SPH,fm(mk),[sx*.095,.115,.2],[.036,.026,.03],'skull');
   if(has('blaze'))add(head,SPH,fm(mk),[0,.075,.205],[.04,.15,.065],'skull');
-  const er=.043*(B.eyeSize||1);
+  const er=.052*(B.eyeSize||1);
   const eyeMat=plain(B.eye,.15,{clearcoat:1,clearcoatRoughness:.05});
   const pupil=plain('#0b0807',.1,{clearcoat:1});
   const glint=new THREE.MeshBasicMaterial({color:'#ffffff'});
   for(const sx of[-1,1]){
-    const e=add(head,SPH,eyeMat,[sx*.105,.035,.226],[er*1.05,er*1.05,er*.85],'eye',{fur:false,shared:true});
+    const e=add(head,SPH,eyeMat,[sx*.112,.018,.236],[er,er*1.06,er*.8],'eye',{fur:false,shared:true});
     if(B.eye!=='#1d1512'){const p=new THREE.Mesh(SPH_LO,pupil);p.position.set(0,0,.55);p.scale.setScalar(.6);e.add(p)}
-    const g=new THREE.Mesh(SPH_LO,glint);g.position.set(.32,.38,.78);g.scale.setScalar(.27);e.add(g);
+    const g=new THREE.Mesh(SPH_LO,glint);g.position.set(.3,.36,.82);g.scale.setScalar(.3);e.add(g);
+    const g2=new THREE.Mesh(SPH_LO,glint);g2.position.set(-.28,-.3,.86);g2.scale.setScalar(.13);e.add(g2);
+    // 볼터치 (털끝 바깥에 살짝 띄움)
+    const bl=new THREE.Mesh(BLUSH_GEO,blushMat);bl.position.set(sx*.16,-.055,.2);bl.quaternion.setFromUnitVectors(V3(0,0,1),V3(sx*.55,-.15,.82).normalize());bl.translateZ(.032);bl.renderOrder=2;head.add(bl);
     d.eyes.push({m:e,s:er});
   }
+  {const z=mzZ+mzL*.93+.022,mo=new THREE.CatmullRomCurve3([V3(-.046,-.098,z-.012),V3(-.024,-.121,z),V3(0,-.104,z+.006),V3(.024,-.121,z),V3(.046,-.098,z-.012)]);
+   const mm=plain('#3b2420',.5);const mt=new THREE.Mesh(new THREE.TubeGeometry(mo,24,.0065,8),mm);head.add(mt);
+   const ln=new THREE.Mesh(new THREE.TubeGeometry(new THREE.LineCurve3(V3(0,-.068,z+.012),V3(0,-.104,z+.006)),2,.006,8),mm);head.add(ln)}
   d.tongue=add(head,SPH,plain('#ef8f98',.45,{clearcoat:.5}),[0,-.15,mzZ+.02],[.05,.018,.07],'muzzle',{fur:false});
   d.tongue.visible=false;d.tongueZ=mzZ+.02;
   if(B.bow){
@@ -344,9 +359,9 @@ function makeDog(B){
     const piv=new THREE.Group();
     if(B.ears.kind==='erect'){
       piv.position.set(sx*.14,.15,-.03);piv.rotation.z=-sx*.32*(B.ears.splay||1);
-      const cone=new THREE.ConeGeometry(1,1,28);
-      add(piv,cone,fm(has('mask')?dk:base),[0,.12*sz,0],[.1*sz,.24*sz,.05*sz],'ear');
-      add(piv,cone,plain(B.inner,.8,{sheen:.5,sheenColor:new THREE.Color('#ffffff')}),[0,.1*sz,.026*sz],[.065*sz,.18*sz,.024*sz],'ear',{fur:false});
+      const cone=EAR_GEO;
+      add(piv,cone,fm(has('mask')?dk:base),[0,0,0],[.1*sz,.24*sz,.05*sz],'ear');
+      add(piv,cone,plain(B.inner,.8,{sheen:.5,sheenColor:new THREE.Color('#ffffff')}),[0,.015*sz,.03*sz],[.065*sz,.19*sz,.024*sz],'ear',{fur:false});
     }else{
       piv.position.set(sx*.21,.08,-.02);piv.rotation.z=sx*.18;
       add(piv,SPH,fm(base),[sx*.03,-.13*sz,0],[.085*sz,.19*sz,.08*sz],'ear');
@@ -395,8 +410,8 @@ function makeDog(B){
   return d;
 }
 function disposeDog(d){
-  d.root.traverse(o=>{if(o.isMesh){if(o.geometry!==SPH&&o.geometry!==SPH_LO&&o.geometry!==BUB_GEO)o.geometry.dispose();
-    for(const m of[].concat(o.material))if(m!==foamMat)m.dispose()}});
+  d.root.traverse(o=>{if(o.isMesh){if(![SPH,SPH_LO,BUB_GEO,EAR_GEO,BLUSH_GEO].includes(o.geometry))o.geometry.dispose();
+    for(const m of[].concat(o.material))if(m!==foamMat&&m!==blushMat)m.dispose()}});
 }
 
 // ---------- 칸 만들기 ----------
@@ -580,7 +595,7 @@ function buildTools(){
   const mk=k=>{const g=new THREE.Group();g.visible=false;toolRoot.add(g);TOOLS[k]=g;return g};
   // 손
   let g=mk('hand');const skin=std('#f3c6a3',.55,{sheen:.4,sheenColor:new THREE.Color('#ffe6d8')});
-  const hg=new THREE.Group();hg.rotation.y=Math.PI/2;hg.scale.setScalar(1.3);g.add(hg);   // 손가락은 화면 왼쪽, 팔은 오른쪽 위로
+  const hg=new THREE.Group();hg.rotation.y=Math.PI/2;hg.scale.setScalar(1.3);g.add(hg);g.userData.hg=hg;   // 손가락은 화면 왼쪽, 팔은 오른쪽 위로
   put(hg,SPH,skin,[0,.045,0],{scl:[.1,.038,.115]});
   g.userData.fingers=[-.06,-.02,.02,.06].map((x,i)=>{const f=new THREE.Group();f.position.set(x,.045,-.1);hg.add(f);
     put(f,new THREE.CapsuleGeometry(.024,.06+(i===1||i===2?.02:0),6,12),skin,[0,0,-.045],{rot:[Math.PI/2,0,0]});return f});
@@ -832,7 +847,7 @@ function update(dt){
   D.root.rotation.y=DOG_ROT+Math.sin(t*30+1)*.05*env*rm;
 
   // 머리: 손 쪽을 바라봄
-  let yawT=Math.sin(t*.5)*.05,pitchT=Math.sin(t*.37)*.03;
+  let yawT=.38+Math.sin(t*.5)*.05,pitchT=Math.sin(t*.37)*.03;
   const target=hit?hit.point:planePoint();
   if(P.inside&&target){
     const q=D.root.worldToLocal(target.clone());
@@ -908,16 +923,16 @@ function applyTool(dt,moving,speed,h){
     const d2=c.p.distanceToSquared(h.rest);if(d2>R2)continue;
     const f=1-Math.sqrt(d2)/R;
     if(tool==='foam'){
-      c.foam=Math.min(1,c.foam+f*dt*(moving?2.4:.6));
-      if(moving){const tr=Math.min(c.dirt,c.foam*f*dt*2.2*sp);c.dirt-=tr;c.loose+=tr}
+      c.foam=Math.min(1,c.foam+f*dt*(moving?3.2:.8));
+      if(moving){const tr=Math.min(c.dirt,c.foam*f*dt*3.6*sp);c.dirt-=tr;c.loose+=tr}
       c.wet=Math.max(c.wet,.25*c.foam);
     }else if(tool==='hand'||tool==='scratch'){
-      if(moving&&c.foam>.05){const tr=Math.min(c.dirt,c.foam*f*dt*(tool==='hand'?1.8:1.4)*sp);c.dirt-=tr;c.loose+=tr}
+      if(moving&&c.foam>.05){const tr=Math.min(c.dirt,c.foam*f*dt*(tool==='hand'?2.6:2)*sp);c.dirt-=tr;c.loose+=tr}
     }else if(tool==='shower'){
       const r=f*dt*2.6;
       if(c.loose>.08&&Math.random()<r*4)muddy(c);
-      c.loose*=Math.exp(-r*1.4);c.foam*=Math.exp(-r*1.6);
-      if(c.foam<.08)c.dirt=Math.max(0,c.dirt-r*.06);
+      c.loose*=Math.exp(-r*1.8);c.foam*=Math.exp(-r*2);
+      if(c.foam<.12)c.dirt=Math.max(0,c.dirt-r*(c.dirt<.2?.6:.3));
       c.wet=Math.min(1,c.wet+r*1.3);
     }else if(tool==='towel'){
       c.wet=Math.max(0,c.wet-f*dt*(moving?1.5:.3)*sp);
@@ -1016,7 +1031,7 @@ function updateTool(dt,hit,moving){
   if(!P.inside){toolInit=false;return}
   let p,n;
   if(hit){p=hit.point;n=hit.normal}else{p=planePoint();n=UP;if(!p){TOOLS[tool].visible=false;return}}
-  _by.copy(tool==='shower'?_np.copy(n).add(UP).normalize():n);
+  _by.copy(_np.copy(n).addScaledVector(UP,tool==='shower'?1:tool==='scratch'?0:.6).normalize());
   _bz.subVectors(camera.position,p);_bz.addScaledVector(_by,-_bz.dot(_by)).normalize();
   _bx.crossVectors(_by,_bz);
   _bm.makeBasis(_bx,_by,_bz);_tq.setFromRotationMatrix(_bm);
@@ -1146,6 +1161,21 @@ document.getElementById('full').addEventListener('click',async()=>{
 });
 
 buildRoom();buildTools();resize();
+// 손: WebXR 입력 프로필의 generic-hand 모델(MIT, Amazon). 불러오기 전/실패 시에는 도형 손을 그대로 씀
+new GLTFLoader().load('https://cdn.jsdelivr.net/npm/@webxr-input-profiles/assets@1.0.19/dist/profiles/generic-hand/right.glb',gl=>{
+  const g=TOOLS.hand;
+  const skin=new THREE.MeshPhysicalMaterial({color:'#f6cbb0',roughness:.48,sheen:.6,sheenRoughness:.5,sheenColor:new THREE.Color('#ffd9cc'),clearcoat:.12});
+  gl.scene.traverse(o=>{if(o.isMesh){o.material=skin;o.castShadow=true;o.frustumCulled=false}});
+  // 모델은 손가락이 -y, 손바닥이 -x. 도구 좌표에서는 손가락이 -x(화면 왼쪽), 손바닥이 아래(-y)
+  const holder=new THREE.Group();
+  holder.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(V3(0,1,0),V3(1,0,0),V3(0,0,-1)));
+  holder.add(gl.scene);
+  const wrap=new THREE.Group();wrap.add(holder);wrap.scale.setScalar(1.9);wrap.position.set(.1,.04,0);wrap.rotation.z=.12;
+  const sleeve=new THREE.MeshPhysicalMaterial({color:'#8fb3d6',roughness:.95,sheen:1,sheenColor:new THREE.Color('#e2eeff')});
+  const sl=new THREE.Mesh(new THREE.CylinderGeometry(.068,.08,.3,28),sleeve);sl.position.set(.41,.13,0);sl.rotation.z=-1.11;sl.castShadow=true;
+  const cuff=new THREE.Mesh(new THREE.TorusGeometry(.064,.02,12,30),sleeve);cuff.position.set(.27,.07,0);cuff.rotation.set(0,Math.PI/2,-1.11+Math.PI/2);
+  g.userData.hg.visible=false;g.userData.fingers=[];g.add(wrap,sl,cuff);
+},undefined,()=>{});
 const savedBreed=store.get('dog-petting-breed');
 selectBreed(BREEDS[savedBreed]?savedBreed:'shiba');
 const savedTool=store.get('dog-petting-tool');selectTool(RADIUS[savedTool]?savedTool:'hand');
