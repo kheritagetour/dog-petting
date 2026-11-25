@@ -243,6 +243,8 @@ dialog.gacha::backdrop{background:rgba(30,20,10,.5)}
 .sep{width:1px;height:28px;background:var(--line)}
 button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 .foot{display:flex;justify-content:flex-end}
+.foot.sub{justify-content:flex-end;gap:8px}
+.foot.sub .text-btn{font-size:13px;padding:6px 12px;text-decoration:none}
 .treat-row{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:center;justify-content:space-between}
 .text-btn{font:inherit;font-size:14px;color:var(--ink);background:var(--chip);border:none;border-radius:999px;padding:7px 14px;cursor:pointer}
 @media (max-width:640px){
@@ -289,6 +291,12 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 .w-dog{width:44px;height:44px;border-radius:50%;background:#fff center/cover;box-shadow:0 0 0 3px #fff,0 4px 10px rgba(0,0,0,.3)}
 .w-spot{font-size:26px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.3));animation:hop .8s ease-in-out infinite alternate}
 .w-paw{font-size:14px;opacity:.75}
+.w-flower{font-size:18px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25));animation:bloom .6s cubic-bezier(.3,1.6,.5,1)}
+@keyframes bloom{from{transform:scale(0)}}
+.w-zone{font-size:22px;opacity:.9}
+.w-links{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.r-list{list-style:none;padding:0;margin:12px 0 0;display:grid;gap:6px}
+.r-list button{width:100%;text-align:left;font:inherit;border:none;border-radius:12px;padding:10px 12px;background:var(--bg);color:var(--ink);cursor:pointer;display:flex;justify-content:space-between;gap:8px}
 .w-sum{position:absolute;inset:auto 12px 12px 12px;background:var(--surface);border-radius:18px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,.25);z-index:500}
 .w-sum img{width:100%;border-radius:12px}
 .w-sum ul{list-style:none;padding:0;margin:8px 0;display:grid;gap:3px;font-size:14px}
@@ -348,6 +356,10 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
     <button class="text-btn" id="goOut">🐾 함께 나가기</button>
     <button class="text-btn" id="leaveBtn">🏢 다녀올게</button>
   </div>
+  <div class="foot sub">
+    <button class="text-btn" id="loginBtn" hidden>Google로 로그인</button>
+    <a class="text-btn" id="langLink" href="https://kheritagetour.github.io/dog-petting/en/">English</a>
+  </div>
   <dialog class="gacha" id="gacha" aria-labelledby="gachaTitle">
     <div class="g-head"><h2 id="gachaTitle">간식 뽑기</h2>
       <button class="icon" id="gClose" aria-label="닫기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
@@ -384,7 +396,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
     <div class="w-top"><h2 id="wTitle">산책 중</h2><button class="text-btn" id="wEnd">산책 끝내기</button></div>
     <div class="w-map"><div id="wMap"></div><div class="w-sum" id="wSum" hidden></div></div>
     <div class="w-bot">
-      <div class="w-stats"><div><b id="wDist">0m</b><span>거리</span></div><div><b id="wTime">0:00</b><span>시간</span></div><div><b id="wSteps">0</b><span>걸음</span></div><div><b id="wFound">0/6</b><span>냄새 스팟</span></div></div>
+      <div class="w-stats"><div><b id="wDist">0m</b><span>거리</span></div><div><b id="wTime">0:00</b><span>시간</span></div><div><b id="wSteps">0</b><span>걸음</span></div><div><b id="wFound">0</b><span>찾은 간식 · 🌸</span></div></div>
       <p class="w-msg" id="wMsg"></p>
     </div>
   </section>
@@ -400,7 +412,8 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
   </dialog>
   <dialog class="gacha" id="albumDlg" aria-labelledby="albumTitle">
     <div class="g-head"><h2 id="albumTitle">우리 강아지 일기장</h2><button class="icon" id="albumClose" aria-label="닫기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
-    <div class="al-tabs"><button id="alPics" aria-selected="true">사진</button><button id="alMemo" aria-selected="false">우리의 추억</button></div>
+    <div class="al-tabs"><button id="alPics" aria-selected="true">사진</button><button id="alMemo" aria-selected="false">우리의 추억</button><button id="alWalk" aria-selected="false">추억의 산책길</button></div>
+    <ul class="r-list" id="routeList" hidden></ul>
     <p class="g-note" id="albumNote"></p>
     <ul class="memo" id="memoList" hidden></ul>
     <div class="v-btns"><label class="text-btn m-photo">📷 진짜 우리 강아지 사진 올리기<input type="file" accept="image/*" id="realPhoto"></label></div>
@@ -494,6 +507,8 @@ function breedFromParams(m0){
     collar:m.collar,inner:'#f1c8bc',fav:'head',fur:m.furLen,furDen:Math.round(150-m.furLen*900),custom:true};
 }
 const PERKS={ball:{lv:1,name:'공놀이',ico:'🎾'},paw:{lv:2,name:'손!',ico:'🐾'},roll:{lv:3,name:'뒹굴기',ico:'🌀'},kiss:{lv:4,name:'뽀뽀',ico:'💋'},crown:{lv:5,name:'꽃 화관 선물',ico:'🌸'},gold:{lv:6,name:'황금 목줄',ico:'✨'}};
+// 레벨이 오르면 방에 생기는 선물
+const ROOM_GIFTS=[{lv:1,k:'toybox',name:'장난감 상자',ico:'🧸'},{lv:2,k:'bandana',name:'반다나',ico:'🧣'},{lv:2,k:'pots',name:'꽃 화분',ico:'🪴'},{lv:3,k:'house',name:'강아지 집',ico:'🏠'},{lv:4,k:'photo',name:'우리 사진 액자',ico:'🖼️'},{lv:6,k:'lights',name:'반짝이 전구',ico:'💡'}];
 const LV=[0,20,55,110,190,300,450],TITLES=['처음 본 사이','아는 사이','친구','단짝','베프','가족','영혼의 단짝'];
 const lvOf=x=>{let l=0;while(l<LV.length-1&&x>=LV[l+1])l++;return l};
 // 재화: 🦴 뼈다귀(놀면서 모음) · 💎 다이아(상점에서 충전) · 🎫 뽑기권
@@ -508,7 +523,7 @@ const SHOP={
   d340:{name:'💎 340',price:11000,give:{d:340},first:true},
   d1000:{name:'💎 1,000',price:33000,give:{d:1000},first:true},
 };
-const COSMETICS={hat:{name:'파티 모자',d:80},crown:{name:'꽃 화관',d:120},glasses:{name:'선글라스',d:100}};
+const COSMETICS={hat:{name:'파티 모자',d:80},crown:{name:'꽃 화관',d:120},glasses:{name:'선글라스',d:100},bandana:{name:'반다나',d:60}};
 const BONE_SHOP={biscuit:10,apple:8,potato:12};
 const TREAT_DIA={cheese:8,jerky:10,salmon:18,liver:18,churu:35};
 const BONE_TICKET=80;
@@ -1100,6 +1115,12 @@ function makeCosmetic(k){
       put(SPH_LO,M(cols[i%5],.6,{sheen:.6,sheenColor:new THREE.Color('#fff')}),[x,0,z],[.032,.022,.032],[0,0,0],ring);
       put(SPH_LO,M('#ffd23f',.5),[x,.016,z],[.011,.011,.011],[0,0,0],ring);
       put(SPH_LO,M('#6fb36a',.6),[Math.cos(a+.3)*.2,-.006,Math.sin(a+.3)*.19],[.022,.006,.012],[0,-a,0],ring)}
+  }else if(k==='bandana'){
+    const tex=canvasTex(128,128,(c,w,h)=>{c.fillStyle='#e8545f';c.fillRect(0,0,w,h);c.fillStyle='#fff';for(let y=8;y<h;y+=22)for(let x=(y/22%2)*11+6;x<w;x+=22){c.beginPath();c.arc(x,y,4,0,TAU);c.fill()}});
+    const m=M('#ffffff',.85,{map:tex,sheen:1,sheenColor:new THREE.Color('#fff'),side:THREE.DoubleSide});
+    const tri=new THREE.BufferGeometry().setFromPoints([V3(-.19,0,0),V3(.19,0,0),V3(0,-.2,.03)]);tri.computeVertexNormals();
+    const bd=new THREE.Group();bd.position.set(0,-.25,.12);bd.rotation.x=.35;g.add(bd);put(tri,m,[0,0,.12],[1,1,1],[0,0,0],bd);
+    put(new THREE.TorusGeometry(.19,.025,8,32),m,[0,0,0],[1.1,1,1],[Math.PI/2-.2,0,0],bd);
   }else if(k==='glasses'){
     const lens=M('#1f2230',.08,{clearcoat:1,metalness:.2}),fr=M('#ff6f91',.35);
     for(const sx of[-1,1]){put(new THREE.CylinderGeometry(.052,.052,.012,28),lens,[sx*.105,.04,.272],[1,1,.85],[Math.PI/2,0,0]);
@@ -1155,7 +1176,7 @@ let save=defaultSave();
 try{const v=JSON.parse(localStorage.getItem(SAVE_KEY));if(v&&typeof v==='object')save=Object.assign(defaultSave(),v)}catch{}
 for(const k in save.inv)if(save.inv[k]>0)save.seen[k]=true;
 if(save.mine){save.mine=migrateMine(save.mine);BREEDS.mine=breedFromParams(save.mine)}
-function persist(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(save))}catch{}}
+function persist(){save.updatedAt=Date.now();try{localStorage.setItem(SAVE_KEY,JSON.stringify(save))}catch{}if(typeof pushCloud==='function')pushCloud()}
 const level=()=>lvOf(save.xp[B.key]||0);
 
 // ---------- 소리 ----------
@@ -1216,10 +1237,38 @@ function buildDog(key){
   {const tex=canvasTex(128,128,(g,w,h)=>{g.fillStyle='#f3b6c2';g.fillRect(0,0,w,h);g.fillStyle='rgba(255,255,255,.55)';for(let i=0;i<w;i+=32){g.fillRect(i,0,10,h);g.fillRect(0,i,w,10)}g.fillStyle='rgba(200,90,120,.25)';for(let i=16;i<w;i+=32){g.fillRect(i,0,4,h);g.fillRect(0,i,w,4)}},{repeat:[3,3]});
    const bl=new THREE.Mesh(new THREE.SphereGeometry(1,40,20,0,TAU,0,Math.PI*.5),new THREE.MeshPhysicalMaterial({map:tex,roughness:1,sheen:1,sheenColor:new THREE.Color('#fff'),side:THREE.DoubleSide}));
    bl.position.set(0,.2,-.12*B.len);bl.scale.set(.47*B.w*B.fluff,.4*B.fluff,.7*B.len);bl.receiveShadow=bl.castShadow=true;bl.visible=false;D.body.add(bl);D.blanket=bl}
-  goldCollar();
+  goldCollar();updateGifts();
   Object.assign(PL,{x:0,z:0,y:.205,face:DOG_ROT,sq:0,roll:0});S.fetch=null;S.trick=null;S.sleep=null;S.doze=0;
   if(BALL.state!=='rest'){BALL.state='rest';BALL.p.set(1.65,.13,1.05);BALL.v.set(0,0,0)}
   renderActs();
+}
+function buildGifts(){
+  const G=room.living,std=(c,r=.6,o={})=>new THREE.MeshPhysicalMaterial({color:c,roughness:r,...o}),gifts=room.gifts={};
+  const grp=k=>{const g=new THREE.Group();g.visible=false;G.add(g);gifts[k]=g;return g};
+  const put=(g,geo,mat,pos,o={})=>{const m=new THREE.Mesh(geo,mat);m.position.set(...pos);if(o.rot)m.rotation.set(...o.rot);if(o.scl)m.scale.set(...o.scl);m.castShadow=m.receiveShadow=true;g.add(m);return m};
+  let g=grp('toybox');g.position.set(2.45,0,-.7);g.rotation.y=-.5;
+  put(g,new RoundedBoxGeometry(.7,.42,.5,3,.05),std('#7ec8e3',.5,{clearcoat:.4}),[0,.21,0]);put(g,new RoundedBoxGeometry(.72,.06,.52,3,.02),std('#ffd166',.5),[0,.44,0]);
+  put(g,SPH,std('#ff8fa3',.5),[-.15,.5,0],{scl:[.1,.1,.1]});put(g,new THREE.TorusGeometry(.08,.03,10,24),std('#9be29b',.5),[.12,.52,.05],{rot:[.6,0,.3]});
+  put(g,new RoundedBoxGeometry(.12,.12,.12,2,.02),std('#b39cff',.5),[.05,.5,-.12],{rot:[.3,.5,0]});
+  g=grp('pots');g.position.set(-2.75,0,.6);
+  [['#ff9eb5',0],['#ffe066',.42],['#c9a7ff',.84]].forEach(([c,z])=>{put(g,new THREE.CylinderGeometry(.13,.1,.2,24),std('#d98a6e',.8),[0,.1,z]);
+    for(let i=0;i<5;i++){const a=i/5*TAU;put(g,SPH_LO,std(c,.6,{sheen:.6,sheenColor:new THREE.Color('#fff')}),[Math.cos(a)*.06,.32+Math.random()*.05,z+Math.sin(a)*.06],{scl:[.045,.04,.045]})}
+    put(g,SPH_LO,std('#ffd23f',.5),[0,.35,z],{scl:[.03,.03,.03]});put(g,new THREE.CylinderGeometry(.01,.01,.14,6),std('#5f9a5a',.7),[0,.24,z])});
+  g=grp('house');g.position.set(-.75,0,-2.25);g.rotation.y=.25;
+  put(g,new RoundedBoxGeometry(1,.75,.85,3,.05),std('#f4c27a',.7),[0,.375,0]);
+  put(g,new THREE.CylinderGeometry(.72,.72,.95,3,1),std('#e8545f',.55),[0,.92,0],{rot:[Math.PI/2,0,Math.PI/2],scl:[1,1,.62]});
+  put(g,new THREE.CircleGeometry(.24,28),new THREE.MeshBasicMaterial({color:'#3a2a20'}),[0,.32,.428]);
+  put(g,new RoundedBoxGeometry(.4,.12,.03,2,.01),std('#fffaf0',.6),[0,.66,.44]);
+  g=grp('photo');g.position.set(-3.13,2.05,1.0);g.rotation.y=Math.PI/2;
+  put(g,new RoundedBoxGeometry(.95,.75,.06,3,.02),std('#ffffff',.5),[0,0,0]);
+  room.photoMat=new THREE.MeshBasicMaterial({color:'#f6efe3'});put(g,new THREE.PlaneGeometry(.82,.62),room.photoMat,[0,0,.035]);
+  g=grp('lights');const cols=['#ffd166','#ff8fa3','#7ec8e3','#9be29b','#c9a7ff'];room.bulbs=[];
+  for(let i=0;i<22;i++){const x=-2.6+i*.25,y=3.1-Math.sin(i/21*Math.PI)*.35;room.bulbs.push(put(g,SPH_LO,new THREE.MeshBasicMaterial({color:cols[i%5]}),[x,y,-2.95],{scl:[.05,.065,.05]}))}
+}
+async function updateGifts(){
+  if(!room.gifts||!D)return;const lv=level();for(const G0 of ROOM_GIFTS)if(room.gifts[G0.k])room.gifts[G0.k].visible=lv>=G0.lv;
+  if(lv>=2&&!save.cos.own.includes('bandana')){save.cos.own.push('bandana');if(!save.cos.eq)save.cos.eq='bandana';persist();equipCosmetic()}
+  if(lv>=4){try{const l=await diary.all(),p=l.find(x=>x.kind!=='walk');if(p&&p.id!==room.photoId){room.photoId=p.id;const bm=await createImageBitmap(p.blob),t=new THREE.CanvasTexture(bm);t.colorSpace=THREE.SRGBColorSpace;room.photoMat.map=t;room.photoMat.color.set('#ffffff');room.photoMat.needsUpdate=true}}catch{}}
 }
 function goldCollar(){if(D&&level()>=6){D.collar.material.color.set('#e6b84e');D.collar.material.metalness=.9;D.collar.material.roughness=.25}}
 function dirty(){
@@ -1491,6 +1540,7 @@ function update(dt){
   updateStates();
   updateTool(dt,hit,moving);
   updateBubble(dt);
+  if(room.bulbs&&room.gifts.lights.visible)room.bulbs.forEach((b,i)=>b.scale.setScalar(.05+.012*Math.sin(t*3+i)));
 
   // 소리
   const s1=Math.sin(S.pantPhase);
@@ -1726,6 +1776,7 @@ function addXP(n){
     setTimeout(()=>say(`애정 레벨 업! 이제 우리는 '${TITLES[l]}'!${pk?` ${pk.ico} ${pk.name} 해금!`:''}`,4.2),bubbleT>0?900:0);addCoins(20);grant({d:10});
     if(l===5&&!save.cos.own.includes('crown')){save.cos.own.push('crown');save.cos.eq='crown';persist();equipCosmetic()}
     if(l>=6)goldCollar();
+    {const gs=ROOM_GIFTS.filter(x=>x.lv===l);if(gs.length){updateGifts();setTimeout(()=>{say(`선물이 생겼어요! ${gs.map(x=>x.ico+' '+x.name).join(', ')}`,3.6);gs.forEach(x=>memo(`gift_${x.k}_`+B.key,`레벨 선물 '${x.name}'을(를) 받았어요`,x.ico))},4800)}}
     renderActs();
     if(l>=2&&!offerActive()){save.offer.until=Date.now()+864e5;persist();renderCoins()}}
 }
@@ -1893,7 +1944,7 @@ function updateUI(){
   const xp=save.xp[B.key]||0,lv=lvOf(xp),nx=LV[lv+1];
   loveBar.style.width=(nx?(xp-LV[lv])/(nx-LV[lv])*100:100).toFixed(1)+'%';loveVal.textContent=`Lv.${lv} ${TITLES[lv]}`;
   energyBar.style.width=(S.energy*100).toFixed(1)+'%';energyVal.textContent=S.sleep?'충전 중':Math.round(S.energy*100)+'%';
-  {const nx=Object.values(PERKS).find(x=>x.lv>lv);const txt=nx?`다음 Lv.${nx.lv} 보상 ${nx.ico} ${nx.name}`:'모든 애정 보상을 열었어요 ✨';if(perkEl.textContent!==txt)perkEl.textContent=txt}
+  {const all=[...Object.values(PERKS),...ROOM_GIFTS].filter(x=>x.lv>lv),nl=all.length?Math.min(...all.map(x=>x.lv)):0,nx=all.filter(x=>x.lv===nl);const txt=nx.length?`다음 Lv.${nl} 보상 ${nx.map(x=>x.ico+' '+x.name).join(' · ')}`:'모든 애정 보상을 열었어요 ✨';if(perkEl.textContent!==txt)perkEl.textContent=txt}
   fullBar.style.width=(S.full*100).toFixed(1)+'%';fullVal.textContent=S.full>.9?'배불러요':Math.round(S.full*100)+'%';
   cleanBar.style.width=(S.clean*100).toFixed(1)+'%';
   cleanVal.textContent=Math.round(S.clean*100)+'%'+(S.wet>.12?` · 물기 ${Math.round(S.wet*100)}%`:'');
@@ -2105,7 +2156,6 @@ function memo(key,txt,ico){if(save.memoKeys[key])return;save.memoKeys[key]=1;sav
 const GREET=['…누구세요? (경계하는 눈빛)','아, 왔어요?','왔다! 반가워요!','주인 왔다! 꼬리가 멈추질 않아요!','주인~! 오늘도 보고 싶었어!','주인!!! 최고!!! 사랑해!!!','우리 가족 왔다! 세상에서 제일 좋아!'];
 // ---------- 함께 나가기 ----------
 const OUTINGS={
-  walk:{name:'동네 산책',ico:'🐕',lv:0,desc:'흙투성이가 되지만 기분 최고',sec:4,fx:{h:.2,energy:-.18,weight:-.08,dirt:1,xp:2,c:5}},
   park:{name:'공원',ico:'🌳',lv:1,desc:'친구들과 뛰어놀아요. 기운이 많이 들어요',sec:5,fx:{h:.35,energy:-.35,weight:-.15,dirt:1,xp:4,c:10},need:.3},
   cafe:{name:'애견카페',ico:'☕',lv:2,desc:'퍼푸치노 한 잔! 새 친구를 만나요',sec:5,fx:{h:.3,energy:-.1,weight:.05,full:.2,xp:4,c:15}},
   beach:{name:'바닷가',ico:'🏖️',lv:3,desc:'모래와 바닷물로 엉망진창! 그래도 신나요',sec:6,fx:{h:.4,energy:-.3,weight:-.12,dirt:1,wet:.7,xp:5,c:15},need:.3},
@@ -2157,13 +2207,29 @@ let W=null,leafletP=null;
 function loadLeaflet(){return leafletP||(leafletP=new Promise((res,rej)=>{if(window.L)return res(window.L);const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';sc.onload=()=>res(window.L);sc.onerror=rej;document.head.append(sc)}))}
 const hav=(a,b)=>{const R0=6371e3,t=Math.PI/180,dl=(b[0]-a[0])*t,dn=(b[1]-a[1])*t,x=Math.sin(dl/2)**2+Math.cos(a[0]*t)*Math.cos(b[0]*t)*Math.sin(dn/2)**2;return 2*R0*Math.asin(Math.sqrt(x))};
 const offset=(p,m,brg)=>{const R0=6371e3,t=Math.PI/180,d=m/R0,la=p[0]*t,lo=p[1]*t,la2=Math.asin(Math.sin(la)*Math.cos(d)+Math.cos(la)*Math.sin(d)*Math.cos(brg));return[la2/t,(lo+Math.atan2(Math.sin(brg)*Math.sin(d)*Math.cos(la),Math.cos(d)-Math.sin(la)*Math.sin(la2)))/t]};
-const SPOT_ICO=['🦴','🍪','🌸','🧀','🍖','💎'];
+const FLOWERS=['🌸','🌼','🌷','🌺','💮','🌻'];
+// 길에 숨은 간식: 지도에는 대략적인 냄새 구역(❔)만 보임
+const HIDDEN=[['biscuit',30],['apple',20],['potato',20],['cheese',12],['jerky',10],['salmon',4],['liver',3],['churu',1]];
+function spawnSpots(c,n){const L=window.L;
+  for(let i=0;i<n;i++){let x=Math.random()*HIDDEN.reduce((a,h)=>a+h[1],0),k='biscuit';for(const[h,w]of HIDDEN){x-=w;if(x<0){k=h;break}}
+    const sp={p:offset(c,60+Math.random()*240,Math.random()*TAU),k,got:false};W.spots.push(sp);
+    if(L&&W.map){const fuzzy=offset(sp.p,Math.random()*30,Math.random()*TAU);
+      sp.m=L.layerGroup([L.circle(fuzzy,{radius:55,color:'#f0a02c',weight:1,fillColor:'#ffd27a',fillOpacity:.22,dashArray:'4 6'}),
+        L.marker(fuzzy,{icon:L.divIcon({className:'',html:'<div class="w-zone w-spot">❔</div>',iconSize:[26,26],iconAnchor:[13,13]}),interactive:false})]).addTo(W.map)}}}
+// 찾은 간식은 그 자리에서 냠냠 (기분·애정이 오르고 추억으로 남음)
+function foundTreat(sp){
+  const T=TREATS[sp.k];save.seen[sp.k]=true;S.h=Math.min(1,S.h+T.mood);addXP(T.xp);S.full=Math.min(1,S.full+T.full*.6);addWeight(T.full*.1);
+  W.eaten.push(sp.k);memo('found_'+sp.k+B.key,`산책길에서 숨은 ${T.name}을(를) 찾아 먹었어요`,'🐽');
+  wMsg.textContent=`🐽 킁킁! 숨어 있던 ${T.name} 발견! 냠냠 먹었어요 (${RARITY[T.r].name})`;
+  if(T.r!=='common'){grant({c:5})}
+  try{navigator.vibrate&&navigator.vibrate([60,40,60])}catch{}walkTick();
+}
 async function startWalk(){
-  if(!('geolocation' in navigator)){showToast('이 기기에서는 위치를 쓸 수 없어요. 빠른 산책으로 다녀올게요');goQuickWalk();return}
+  if(!('geolocation' in navigator)){showToast('이 기기에서는 위치(GPS)를 쓸 수 없어요. 휴대폰에서 열어 주세요');return}
   if(scenery==='bath')selectTool('hand');
   walkEl.hidden=false;document.getElementById('wSum').hidden=true;document.getElementById('wTitle').textContent=`${B.name}${josa(B.name,'와','과')} 산책 중`;
   wMsg.textContent='위치를 찾는 중이에요… (위치 권한을 허용해 주세요)';
-  W={pts:[],dist:0,t0:Date.now(),found:0,spots:[],paws:0,watch:null,map:null,line:null,dog:null,timer:null};
+  W={pts:[],dist:0,t0:Date.now(),found:0,spots:[],paws:0,flowers:[],eaten:[],watch:null,map:null,line:null,dog:null,timer:null};
   try{
     const L=await loadLeaflet();
     W.map=L.map('wMap',{zoomControl:false,attributionControl:true}).setView([37.5665,126.978],17);
@@ -2179,29 +2245,32 @@ function onPos(pos){
   const last=W.pts[W.pts.length-1];
   if(!last){
     W.pts.push(p);wMsg.textContent='출발! 걸으면 동선이 그려져요. 근처 냄새 스팟을 찾아 보세요 🐾';
-    // 출발점 주변 80~250m에 냄새 스팟 6개
-    for(let i=0;i<6;i++){const sp={p:offset(p,80+Math.random()*170,Math.random()*TAU),ico:SPOT_ICO[i],got:false};W.spots.push(sp);
-      if(L&&W.map)sp.m=L.marker(sp.p,{icon:L.divIcon({className:'',html:`<div class="w-spot">${sp.ico}</div>`,iconSize:[30,30],iconAnchor:[15,15]})}).addTo(W.map)}
+    spawnSpots(p,8);
     if(L&&W.map){W.dog=L.marker(p,{icon:L.divIcon({className:'',html:`<div class="w-dog" style="background-image:url(${breedThumb()})"></div>`,iconSize:[44,44],iconAnchor:[22,22]}),zIndexOffset:1000}).addTo(W.map);W.map.setView(p,17)}
   }else{
     const d=hav(last,p),dt=(pos.timestamp-(W.lastTs||pos.timestamp))/1000;
-    if(d<4)return;if(dt>0&&d/dt>8){W.lastTs=pos.timestamp;return}   // 차나 순간이동은 빼기
+    if(d<4)return;if(dt>0&&d/dt>4.5){W.lastTs=pos.timestamp;return}   // 차나 순간이동은 빼기
     W.pts.push(p);W.dist+=d;
-    if(Math.floor(W.dist/50)>W.paws){W.paws=Math.floor(W.dist/50);if(L&&W.map)L.marker(p,{icon:L.divIcon({className:'',html:'<div class="w-paw">🐾</div>',iconSize:[16,16]}),interactive:false}).addTo(W.map)}
+    // 30m마다 걸은 길에 꽃이 핌
+    if(Math.floor(W.dist/30)>W.paws){W.paws=Math.floor(W.dist/30);const fl=FLOWERS[Math.floor(Math.random()*FLOWERS.length)];W.flowers.push([p[0],p[1],fl]);
+      if(L&&W.map)L.marker(p,{icon:L.divIcon({className:'',html:`<div class="w-flower">${fl}</div>`,iconSize:[20,20]}),interactive:false}).addTo(W.map)}
+    if(hav(W.pts[0],p)>350&&W.spots.every(x=>x.got||hav(x.p,p)>400))spawnSpots(p,5);
     if(Math.random()<.08)wMsg.textContent=['킁킁… 좋은 냄새가 나요!','신난다! 더 걸어요!','저기 뭐가 있는 것 같아요!','주인이랑 걷는 게 제일 좋아요'][Math.floor(Math.random()*4)];
   }
   W.lastTs=pos.timestamp;
   if(W.line)W.line.addLatLng(p);if(W.dog){W.dog.setLatLng(p);W.map.panTo(p,{animate:true})}
-  for(const sp of W.spots)if(!sp.got&&hav(sp.p,p)<25){sp.got=true;W.found++;if(sp.m)sp.m.remove();
-    const rew=sp.ico==='💎'?{d:5}:sp.ico==='🧀'?{inv:{cheese:1}}:sp.ico==='🍖'?{inv:{jerky:1}}:sp.ico==='🍪'?{inv:{biscuit:1}}:{c:10};grant(rew);
-    wMsg.textContent=`${sp.ico} 냄새 스팟 발견! 선물을 주웠어요`;try{navigator.vibrate&&navigator.vibrate(80)}catch{}}
+  // 정확한 자리가 아니어도 45m 안에 오면 강아지가 냄새로 찾아냄
+  let near=1e9;
+  for(const sp of W.spots){if(sp.got)continue;const dd=hav(sp.p,p);near=Math.min(near,dd);
+    if(dd<45){sp.got=true;W.found++;if(sp.m)sp.m.remove();foundTreat(sp)}}
+  if(near<90&&Math.random()<.3)wMsg.textContent='킁킁킁! 아주 가까워요! 🐽';else if(near<160&&Math.random()<.12)wMsg.textContent='킁킁… 이쪽에서 간식 냄새가 나요';
   walkTick();
 }
 function walkTick(){if(!W)return;const s=Math.floor((Date.now()-W.t0)/1000);
   document.getElementById('wDist').textContent=W.dist<1000?Math.round(W.dist)+'m':(W.dist/1000).toFixed(2)+'km';
   document.getElementById('wTime').textContent=`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
   document.getElementById('wSteps').textContent=Math.round(W.dist/.7).toLocaleString('ko-KR');
-  document.getElementById('wFound').textContent=`${W.found}/${W.spots.length||6}`}
+  document.getElementById('wFound').textContent=`${W.found} · ${W.flowers.length}`}
 function breedThumb(){const b=breedsEl.querySelector(`[data-breed="${B.key}"]`);const m=b&&/url\("?([^")]+)"?\)/.exec(b.style.backgroundImage);return m?m[1]:''}
 // 동선을 그린 산책 카드 (일기장에 저장)
 async function routeCard(){
@@ -2212,33 +2281,60 @@ async function routeCard(){
     const x0=Math.min(...lo),x1=Math.max(...lo),y0=Math.min(...la),y1=Math.max(...la),sw=Math.max((x1-x0)*k,(y1-y0),1e-6),sc=380/sw;
     const X=p=>380+((p[1]-(x0+x1)/2)*k)*sc,Y=p=>244-(p[0]-(y0+y1)/2)*sc;
     g.strokeStyle='#f08a5d';g.lineWidth=8;g.lineCap=g.lineJoin='round';g.beginPath();P0.forEach((p,i)=>i?g.lineTo(X(p),Y(p)):g.moveTo(X(p),Y(p)));g.stroke();
-    g.font='26px sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('🏁',X(P0[0]),Y(P0[0]));g.fillText('🐶',X(P0[P0.length-1]),Y(P0[P0.length-1]))}
+    g.font='18px sans-serif';g.textAlign='center';g.textBaseline='middle';for(const f of W.flowers)g.fillText(f[2],X(f),Y(f));
+    g.font='26px sans-serif';g.fillText('🏁',X(P0[0]),Y(P0[0]));g.fillText('🐶',X(P0[P0.length-1]),Y(P0[P0.length-1]))}
   else{g.font='22px "Gowun Dodum",sans-serif';g.fillStyle='#7a7064';g.textAlign='center';g.fillText('동선이 아직 짧아요',380,244)}
   const s=Math.floor((Date.now()-W.t0)/1000),d=new Date();g.textAlign='left';g.textBaseline='top';
   g.fillStyle='#2f2a24';g.font='32px Jua, sans-serif';g.fillText(`${B.name}${josa(B.name,'와','과')} 산책`,28,484);
   g.fillStyle='#7a7064';g.font='21px "Gowun Dodum",sans-serif';
-  g.fillText(`${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()} · ${W.dist<1000?Math.round(W.dist)+'m':(W.dist/1000).toFixed(2)+'km'} · ${Math.floor(s/60)}분 · ${Math.round(W.dist/.7).toLocaleString('ko-KR')}걸음 · 냄새 스팟 ${W.found}개`,28,530);
+  g.fillText(`${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()} · ${W.dist<1000?Math.round(W.dist)+'m':(W.dist/1000).toFixed(2)+'km'} · ${Math.floor(s/60)}분 · ${Math.round(W.dist/.7).toLocaleString('ko-KR')}걸음 · 간식 ${W.found}개 · 꽃 ${W.flowers.length}송이`,28,530);
   return new Promise(r=>c.toBlob(r,'image/jpeg',.88));
+}
+// 하루치 산책길: 같은 날 여러 번 걸으면 한 날짜에 이어서 모음
+async function saveRoute(){
+  const day=dayNo(new Date()),old=await diary.getWalk(day)||{day,segs:[],dist:0,flowers:[],dog:B.name,ts:Date.now()};
+  const pts=W.pts.filter((p,i)=>i===0||i===W.pts.length-1||i%2===0).map(p=>[+p[0].toFixed(6),+p[1].toFixed(6)]);
+  old.segs.push(pts);old.dist+=W.dist;old.flowers.push(...W.flowers);old.eaten=(old.eaten||[]).concat(W.eaten);old.ts=Date.now();old.dog=B.name;
+  await diary.putWalk(old);
+}
+function gmapsUrl(segs){
+  const all=segs.flat();if(all.length<2)return'https://www.google.com/maps';
+  const f=p=>p[0].toFixed(6)+','+p[1].toFixed(6),n=Math.min(8,all.length-2),wp=[];for(let i=1;i<=n;i++)wp.push(f(all[Math.round(i*(all.length-1)/(n+1))]));
+  return`https://www.google.com/maps/dir/?api=1&travelmode=walking&origin=${f(all[0])}&destination=${f(all[all.length-1])}${wp.length?'&waypoints='+encodeURIComponent(wp.join('|')):''}`;
+}
+// 지난 산책길 보기 (지도에 그 날 동선과 꽃)
+async function showRouteDay(rec){
+  albumDlg.close();walkEl.hidden=false;const sum=document.getElementById('wSum');sum.hidden=false;document.getElementById('wEnd').hidden=true;
+  const d=new Date(rec.ts);document.getElementById('wTitle').textContent=`${d.getMonth()+1}월 ${d.getDate()}일의 산책길`;
+  for(const[id,v]of[['wDist',rec.dist<1000?Math.round(rec.dist)+'m':(rec.dist/1000).toFixed(2)+'km'],['wTime',`${rec.segs.length}번`],['wSteps',Math.round(rec.dist/.7).toLocaleString('ko-KR')],['wFound',`${(rec.eaten||[]).length} · ${rec.flowers.length}`]])document.getElementById(id).textContent=v;
+  wMsg.textContent=`${rec.dog}${josa(rec.dog,'와','과')} 걸은 길이에요`;
+  sum.innerHTML=`<div class="w-links"><a class="text-btn" target="_blank" rel="noopener" href="${gmapsUrl(rec.segs)}">Google 지도로 보기</a><button class="g-pull" id="wHome" style="margin:0">닫기</button></div>`;
+  W={view:true,pts:[],map:null};
+  sum.querySelector('#wHome').onclick=()=>{walkEl.hidden=true;document.getElementById('wEnd').hidden=false;if(W&&W.map)W.map.remove();W=null};
+  try{const L=await loadLeaflet();W.map=L.map('wMap',{zoomControl:false});L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(W.map);
+    const lines=rec.segs.map(sg=>L.polyline(sg,{color:'#f08a5d',weight:6,opacity:.9}).addTo(W.map));
+    for(const f of rec.flowers)L.marker([f[0],f[1]],{icon:L.divIcon({className:'',html:`<div class="w-flower">${f[2]}</div>`,iconSize:[20,20]}),interactive:false}).addTo(W.map);
+    const b=L.featureGroup(lines).getBounds();if(b.isValid())W.map.fitBounds(b,{padding:[30,30]})}catch{wMsg.textContent='지도를 불러오지 못했어요'}
 }
 async function endWalk(){
   if(!W)return;if(W.watch!=null)navigator.geolocation.clearWatch(W.watch);clearInterval(W.timer);
   const m=W.dist,rew={c:Math.min(200,Math.floor(m/50)*2)},xp=Math.min(15,Math.floor(m/200)),res=[];
   if(m>=30){
     grant(rew);if(xp)addXP(xp);S.h=Math.min(1,S.h+Math.min(.5,.1+m/2000));S.energy=Math.max(0,S.energy-Math.min(.5,m/2000));addWeight(-Math.min(.25,m/4000));
-    if(m>100)dirty();save.walk.total+=m;save.walk.count++;save.walk.best=Math.max(save.walk.best,m);persist();mission('walk',1);
+    if(m>100)dirty();save.walk.flowers=(save.walk.flowers||0)+W.flowers.length;save.walk.total+=m;save.walk.count++;save.walk.best=Math.max(save.walk.best,m);persist();mission('walk',1);
     memo('gps1_'+B.key,'처음으로 진짜 산책을 다녀왔어요','📍');
     for(const[km,ic]of[[1,'🥉'],[5,'🥈'],[10,'🥇'],[42.195,'🏅']])if(save.walk.total>=km*1000)memo(`gpskm${km}_`+B.key,`함께 걸은 거리 ${km}km 달성!`,ic);
-    res.push(`🦴 +${rew.c}`,xp?`💗 애정 +${xp}`:'','🏃 살이 조금 빠졌어요',m>100?'🟤 흙이 묻었어요 · 목욕시켜 주세요':'');
+    res.push(W.eaten.length?`🐽 숨은 간식 ${W.eaten.length}개를 찾아 먹었어요`:'',`🌸 꽃 ${W.flowers.length}송이를 피웠어요`,`🦴 +${rew.c}`,xp?`💗 애정 +${xp}`:'','🏃 살이 조금 빠졌어요',m>100?'🟤 흙이 묻었어요 · 목욕시켜 주세요':'');
+    try{await saveRoute()}catch{}
     try{const blob=await routeCard();await diary.put({id:Date.now()+'w',ts:Date.now(),day:dayNo(new Date()),kind:'walk',blob,cap:`산책 ${Math.round(m)}m`});res.push('📔 산책 카드를 일기장에 넣었어요')}catch{}
   }else res.push('거리가 너무 짧아서 기록하지 않았어요. 30m 이상 걸어 봐요!');
   const sum=document.getElementById('wSum');sum.hidden=false;
-  sum.innerHTML=`<b style="font-family:var(--display);font-size:20px;font-weight:400">산책 끝! ${m<1000?Math.round(m)+'m':(m/1000).toFixed(2)+'km'}</b><ul></ul><button class="g-pull" id="wHome">집으로 돌아가기</button>`;
+  sum.innerHTML=`<b style="font-family:var(--display);font-size:20px;font-weight:400">산책 끝! ${m<1000?Math.round(m)+'m':(m/1000).toFixed(2)+'km'} · 🌸${W.flowers.length}송이</b><ul></ul><div class="w-links">${W.pts.length>1?`<a class="text-btn" target="_blank" rel="noopener" href="${gmapsUrl([W.pts])}">Google 지도로 보기</a>`:''}</div><button class="g-pull" id="wHome">집으로 돌아가기</button>`;
   const ul=sum.querySelector('ul');res.filter(Boolean).forEach(t=>{const li=document.createElement('li');li.textContent=t;ul.append(li)});
   sum.querySelector('#wHome').onclick=()=>{walkEl.hidden=true;if(W&&W.map)W.map.remove();W=null;say(m>=30?['재밌었다! 또 가요!','산책 최고!','다리가 뿌듯해요!'][Math.floor(Math.random()*3)]:'벌써 들어가요?',2.6);for(let i=0;i<(m>=30?8:0);i++)heart(true)};
   document.getElementById('wEnd').disabled=true;setTimeout(()=>document.getElementById('wEnd').disabled=false,800);
 }
-document.getElementById('wEnd').addEventListener('click',()=>{if(document.getElementById('wSum').hidden)endWalk();else document.getElementById('wHome')?.click()});
-function goQuickWalk(){renderOutings();try{outDlg.showModal()}catch{}goOuting('walk')}
+document.getElementById('wEnd').addEventListener('click',()=>{if(W&&!W.view&&document.getElementById('wSum').hidden)endWalk();else document.getElementById('wHome')?.click()});
 // ---------- 다녀올게 (출근·외출) + 홈캠 ----------
 const camEl=document.getElementById('cam'),stageEl=document.getElementById('stage');
 let camVisit={treat:false,voice:0};
@@ -2350,9 +2446,12 @@ const toastEl=document.getElementById('toast');let toastT=0;
 function showToast(t){toastEl.textContent=t;toastEl.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>toastEl.classList.remove('show'),2600)}
 // ---------- 사진 일기장 (이 브라우저의 IndexedDB에 저장) ----------
 const diary={db:null,
-  open(){return this.db||(this.db=new Promise((res,rej)=>{try{const r=indexedDB.open('dog-diary',1);r.onupgradeneeded=()=>r.result.createObjectStore('pics',{keyPath:'id'});r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}}))},
+  open(){return this.db||(this.db=new Promise((res,rej)=>{try{const r=indexedDB.open('dog-diary',2);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains('pics'))db.createObjectStore('pics',{keyPath:'id'});if(!db.objectStoreNames.contains('walks'))db.createObjectStore('walks',{keyPath:'day'})};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}}))},
   async put(o){const db=await this.open();return new Promise((res,rej)=>{const tx=db.transaction('pics','readwrite');tx.objectStore('pics').put(o);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)})},
   async all(){const db=await this.open();return new Promise((res,rej)=>{const q=db.transaction('pics').objectStore('pics').getAll();q.onsuccess=()=>res(q.result.sort((a,b)=>b.ts-a.ts));q.onerror=()=>rej(q.error)})},
+  async getWalk(day){const db=await this.open();return new Promise(res=>{const q=db.transaction('walks').objectStore('walks').get(day);q.onsuccess=()=>res(q.result||null);q.onerror=()=>res(null)})},
+  async putWalk(o){const db=await this.open();return new Promise((res,rej)=>{const tx=db.transaction('walks','readwrite');tx.objectStore('walks').put(o);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)})},
+  async allWalks(){const db=await this.open();return new Promise(res=>{const q=db.transaction('walks').objectStore('walks').getAll();q.onsuccess=()=>res(q.result.sort((a,b)=>b.day-a.day));q.onerror=()=>res([])})},
   async del(id){const db=await this.open();return new Promise(res=>{const tx=db.transaction('pics','readwrite');tx.objectStore('pics').delete(id);tx.oncomplete=res})},
 };
 const moodWord=()=>S.h<.25?'시큰둥':S.h<.5?'편안':S.h<.75?'신남':'황홀';
@@ -2391,11 +2490,21 @@ async function renderAlbum(){
 }
 document.getElementById('albumClose').addEventListener('click',()=>albumDlg.close());
 const alPics=document.getElementById('alPics'),alMemo=document.getElementById('alMemo'),memoList=document.getElementById('memoList');
-function alTab(m){alPics.setAttribute('aria-selected',String(!m));alMemo.setAttribute('aria-selected',String(m));memoList.hidden=!m;albumGrid.hidden=m;viewer.hidden=true;
+function alTab(m){document.getElementById('routeList').hidden=true;document.getElementById('alWalk').setAttribute('aria-selected','false');alPics.setAttribute('aria-selected',String(!m));alMemo.setAttribute('aria-selected',String(m));memoList.hidden=!m;albumGrid.hidden=m;viewer.hidden=true;
   if(m){memoList.textContent='';document.getElementById('albumNote').textContent=save.memos.length?`함께한 지 ${save.days}일째 · 추억 ${save.memos.length}개`:'아직 추억이 없어요. 같이 놀고, 씻기고, 재우면 하나씩 쌓여요.';
     for(const x of save.memos){const li=document.createElement('li'),d=new Date(x.ts);li.innerHTML=`<span style="font-size:22px"></span><div><div></div><small></small></div>`;li.querySelector('span').textContent=x.ico;li.querySelector('div div').textContent=x.txt;li.querySelector('small').textContent=`${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()}`;memoList.append(li)}}
   else renderAlbum()}
 alPics.addEventListener('click',()=>alTab(false));alMemo.addEventListener('click',()=>alTab(true));
+const alWalk=document.getElementById('alWalk'),routeList=document.getElementById('routeList');
+alWalk.addEventListener('click',async()=>{
+  for(const b of[alPics,alMemo])b.setAttribute('aria-selected','false');alWalk.setAttribute('aria-selected','true');
+  memoList.hidden=true;albumGrid.hidden=true;viewer.hidden=true;routeList.hidden=false;routeList.textContent='';
+  let list=[];try{list=await diary.allWalks()}catch{}
+  document.getElementById('albumNote').textContent=list.length?`산책한 날 ${list.length}일 · 함께 걸은 거리 ${(save.walk.total/1000).toFixed(1)}km · 피운 꽃 ${save.walk.flowers||0}송이`:'아직 산책길이 없어요. 함께 나가기 → 진짜로 같이 산책하기로 걸어 보세요!';
+  for(const r of list){const d=new Date(r.ts),li=document.createElement('li'),b=document.createElement('button');
+    b.innerHTML=`<span></span><span>🌸${r.flowers.length}</span>`;b.firstChild.textContent=`${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()} · ${r.dist<1000?Math.round(r.dist)+'m':(r.dist/1000).toFixed(2)+'km'} · ${r.dog}`;
+    b.onclick=()=>showRouteDay(r);li.append(b);routeList.append(li)}
+});
 document.getElementById('vBack').addEventListener('click',()=>{viewer.hidden=true;albumGrid.hidden=false});
 document.getElementById('vDel').addEventListener('click',async()=>{if(!viewing)return;await diary.del(viewing.id);renderAlbum()});
 document.getElementById('vSave').addEventListener('click',async()=>{
@@ -2428,6 +2537,31 @@ function onReturn(){
   return null;
 }
 setInterval(()=>{save.lastSeen=Date.now();persist()},30000);
+// ---------- Google 로그인 + 클라우드 저장 ----------
+// Firebase 콘솔 → 프로젝트 설정 → 웹 앱의 firebaseConfig 객체를 넣으면 켜짐 (Authentication에서 Google 로그인, Firestore 사용 설정 필요)
+const FIREBASE_CONFIG=null;
+const cloud={user:null,t:0,api:null};
+async function initCloud(){
+  if(!FIREBASE_CONFIG)return;
+  const btn=document.getElementById('loginBtn');btn.hidden=false;
+  try{
+    const V='https://cdn.jsdelivr.net/npm/firebase@10.12.2/';
+    const[{initializeApp},A,F]=await Promise.all([import(V+'app/+esm'),import(V+'auth/+esm'),import(V+'firestore/+esm')]);
+    const app=initializeApp(FIREBASE_CONFIG),auth=A.getAuth(app),db=F.getFirestore(app);cloud.api={A,F,auth,db};
+    btn.onclick=async()=>{try{if(cloud.user){await A.signOut(auth);return}await A.signInWithPopup(auth,new A.GoogleAuthProvider())}catch{showToast('로그인하지 못했어요')}};
+    A.onAuthStateChanged(auth,async u=>{
+      cloud.user=u;btn.textContent=u?`${(u.displayName||'나').slice(0,8)} · 로그아웃`:'Google로 로그인';if(!u)return;
+      const ref=F.doc(db,'users',u.uid),snap=await F.getDoc(ref);const c=snap.exists()?snap.data():null;
+      if(c&&c.save&&(c.updatedAt||0)>(save.updatedAt||0)){save=Object.assign(defaultSave(),JSON.parse(c.save));persist();showToast('☁️ 다른 기기의 기록을 불러왔어요');setTimeout(()=>location.reload(),900)}
+      else{await pushCloud(true);showToast('☁️ 로그인했어요. 이제 기록이 계정에 저장돼요')}
+    });
+  }catch{btn.hidden=true}
+}
+async function pushCloud(now){
+  if(!cloud.user||!cloud.api)return;if(!now&&Date.now()-cloud.t<15000)return;cloud.t=Date.now();
+  const{F,db}=cloud.api;try{await F.setDoc(F.doc(db,'users',cloud.user.uid),{save:JSON.stringify(save),updatedAt:save.updatedAt||Date.now()})}catch{}
+}
+initCloud();
 // ---------- 우리 강아지 만들기 (심즈처럼 세밀하게, 데려올 때 💎) ----------
 const mDlg=document.getElementById('mineDlg'),mPhoto=document.getElementById('mPhoto'),mPreview=document.getElementById('mPreview'),mAI=document.getElementById('mAI'),mAIMsg=document.getElementById('mAIMsg');
 const mf=id=>document.getElementById(id);
@@ -2636,7 +2770,7 @@ document.getElementById('full').addEventListener('click',async()=>{
   try{if(document.fullscreenElement)await document.exitFullscreen();else await stage.requestFullscreen()}catch{}
 });
 
-buildRoom();buildBath();buildTools();resize();updateBowls();
+buildRoom();buildBath();buildGifts();buildTools();resize();updateBowls();
 // 손: WebXR 입력 프로필의 generic-hand 모델(MIT, Amazon). 불러오기 전/실패 시에는 도형 손을 그대로 씀
 new GLTFLoader().load('https://cdn.jsdelivr.net/npm/@webxr-input-profiles/assets@1.0.19/dist/profiles/generic-hand/right.glb',gl=>{
   const g=TOOLS.hand;
