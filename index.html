@@ -104,13 +104,46 @@ dialog.gacha::backdrop{background:rgba(30,20,10,.5)}
 .g-results.many{grid-template-columns:repeat(4,1fr)}
 .g-card .x{font-size:12px;font-weight:700}
 .g-note{font-size:12px;color:var(--muted);margin:8px 0 0;text-align:center}
+.wallet-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:flex-end}
+.wallet{display:flex;gap:6px;font-size:13px;font-variant-numeric:tabular-nums}
+.wallet span{background:var(--chip);border-radius:999px;padding:5px 10px;white-space:nowrap}
+.wallet.in{justify-content:center;margin:8px 0 0}
+.text-btn.shop-btn{position:relative;font-family:var(--display);font-size:15px;padding:10px 16px;background:linear-gradient(135deg,#9fd8ff,#b9a6ff);color:#1f2340}
+.shop-btn .dot{position:absolute;top:2px;right:4px;width:10px;height:10px;border-radius:50%;background:#ff5a6e;box-shadow:0 0 0 2px var(--bg)}
+.test-note{font-size:12px;text-align:center;color:#b0563a;background:rgba(240,128,90,.12);border-radius:10px;padding:6px;margin:10px 0 4px}
+.s-sec{margin-top:16px}
+.s-sec h3{font-family:var(--display);font-weight:400;font-size:17px;margin:0 0 8px}
+.s-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.s-item{position:relative;border-radius:14px;background:var(--bg);padding:10px;display:grid;gap:6px;align-content:start;box-shadow:inset 0 0 0 1px var(--line)}
+.s-item.wide{grid-column:1/-1;grid-template-columns:56px 1fr auto;align-items:center}
+.s-item.hot{box-shadow:inset 0 0 0 2px #f0a02c;background:linear-gradient(120deg,rgba(255,210,122,.18),rgba(255,158,143,.14))}
+.s-item img{width:56px;height:56px;border-radius:12px}
+.s-item .t{font-size:14px;line-height:1.3}
+.s-item .d{font-size:12px;color:var(--muted);line-height:1.35}
+.s-item .tag{position:absolute;top:-7px;left:8px;font-size:11px;font-weight:700;color:#fff;background:#ff5a6e;border-radius:999px;padding:1px 8px}
+.s-buy{font:inherit;font-size:13px;border:none;border-radius:10px;padding:8px 10px;cursor:pointer;background:var(--accent);color:var(--accent-ink);white-space:nowrap}
+.s-buy.sure{background:#f0a02c;color:#2a1a0a}
+.s-buy:disabled{opacity:.45;cursor:default}
+.g-card.mystery{display:grid;place-items:center;min-height:120px;background:linear-gradient(145deg,#ffd27a,#ff9e8f);box-shadow:0 0 0 2px #fff6;animation:card .4s cubic-bezier(.3,1.5,.5,1) both,wob .5s ease-in-out infinite alternate;animation-delay:var(--d),calc(var(--d) + .4s)}
+.g-card.mystery .q{font-family:var(--display);font-size:42px;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.15)}
+.g-card.revealed{animation:reveal .45s cubic-bezier(.3,1.6,.5,1) both}
+.g-card .new{position:absolute;top:-8px;right:-6px;font-size:10px;font-weight:800;color:#fff;background:#ff5a6e;border-radius:999px;padding:2px 7px}
+.g-card{position:relative}
+@keyframes wob{to{transform:rotate(3deg) scale(1.03)}}
+@keyframes reveal{from{transform:rotateY(90deg) scale(.8)}}
+.treat.unknown{background:linear-gradient(145deg,#ffe3a3,#ffb9ab);box-shadow:none;display:grid;place-items:center;font-family:var(--display);font-size:24px;color:#fff}
+.text-btn.g-charge{display:block;margin:10px auto 0;background:linear-gradient(135deg,#9fd8ff,#b9a6ff);color:#1f2340;font-family:var(--display)}
 .g-odds{margin-top:12px;font-size:13px}
+.g-odds.mini{margin-top:14px;font-size:11px;text-align:right}
+.g-odds.mini summary{opacity:.6;list-style:none}
+.g-odds.mini summary::-webkit-details-marker{display:none}
+.g-odds.mini[open]{text-align:left}
 .g-odds summary{cursor:pointer;color:var(--muted)}
 .g-odds table{width:100%;border-collapse:collapse;margin-top:6px}
 .g-odds td{padding:4px;border-bottom:1px solid var(--line)}
 .g-odds td:last-child{text-align:right;font-variant-numeric:tabular-nums}
 .rk{font-size:11px;font-weight:700;color:var(--rc)}
-@media (prefers-reduced-motion:reduce){.bubble.pop,.g-card,.machine.shake .globe,.coin-pop{animation:none}}
+@media (prefers-reduced-motion:reduce){.bubble.pop,.g-card,.g-card.mystery,.g-card.revealed,.machine.shake .globe,.coin-pop{animation:none}}
 .corner{position:absolute;top:14px;right:14px;display:flex;gap:8px}
 .round{width:46px;height:46px;border-radius:50%;border:none;background:var(--hud);color:var(--hud-ink);display:grid;place-items:center;cursor:pointer;
   -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);padding:0}
@@ -173,7 +206,11 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
   </div>
   <div class="treat-row">
     <div class="treats" id="treats" role="group" aria-label="간식"></div>
-    <button class="text-btn gacha-btn" id="openGacha"><span>간식 뽑기</span><span id="gachaBtnSub">🦴 0</span></button>
+    <div class="wallet-row">
+      <div class="wallet" id="wallet" aria-label="가진 재화"></div>
+      <button class="text-btn gacha-btn" id="openGacha"><span>간식 뽑기</span><span id="gachaBtnSub"></span></button>
+      <button class="text-btn shop-btn" id="openShop"><span>상점</span><span class="dot" id="shopDot" hidden></span></button>
+    </div>
   </div>
   <div class="foot">
     <button class="text-btn" id="walk">다시 산책 가기</button>
@@ -188,7 +225,15 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
     <p class="g-pity" id="gPity"></p>
     <p class="g-note" id="gNote"></p>
     <div class="g-att"><div class="g-att-h">출석 보상 <span id="attDay"></span></div><ol class="att" id="att"></ol></div>
-    <details class="g-odds"><summary>확률 안내</summary><p class="g-note" style="text-align:left">1회 뽑기에 간식 3개가 나오고, 3개 모두 아래 확률로 각각 따로 뽑혀요. 에픽이 나오면 그 주 픽업 간식일 확률이 70%예요. 9회 연속 에픽 이상이 안 나오면 10회째에 1개 확정, 39회 연속 전설이 안 나오면 40회째에 전설 1개 확정이에요.</p><table id="gOdds"></table></details>
+    <button class="text-btn g-charge" id="gCharge" hidden>💎 다이아 충전하러 가기</button>
+    <details class="g-odds mini"><summary>확률 정보</summary><p class="g-note" style="text-align:left">1회 뽑기에 간식 3개가 나오고, 3개 모두 아래 확률로 각각 따로 뽑혀요. 에픽이 나오면 70%는 그 주 픽업 간식이에요. 9회 연속 에픽 이상이 없으면 10회째에 1개, 39회 연속 전설이 없으면 40회째에 전설 1개가 확정돼요.</p><table id="gOdds"></table></details>
+  </dialog>
+  <dialog class="gacha shop" id="shop" aria-labelledby="shopTitle">
+    <div class="g-head"><h2 id="shopTitle">상점</h2>
+      <button class="icon" id="sClose" aria-label="닫기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+    <div class="wallet in" id="sWallet"></div>
+    <p class="test-note">테스트 모드예요. 실제로 결제되지 않고 바로 지급돼요.</p>
+    <div id="shopBody"></div>
   </dialog>
 </div>
 
@@ -247,8 +292,21 @@ const TREATS={
 const FAV_TREAT={maltese:'apple',shiba:'potato',pom:'churu',corgi:'jerky',husky:'salmon',chihuahua:'cheese'};
 const LV=[0,20,55,110,190,300,450],TITLES=['처음 본 사이','아는 사이','친구','단짝','베프','가족','영혼의 단짝'];
 const lvOf=x=>{let l=0;while(l<LV.length-1&&x>=LV[l+1])l++;return l};
-const PULL_COST=30,PULL10_COST=270,PITY_E=10,PITY_L=40;
-const ATT=[10,10,15,15,20,20,'free'];   // 7일째는 무료 뽑기
+// 재화: 🦴 뼈다귀(놀면서 모음) · 💎 다이아(상점에서 충전) · 🎫 뽑기권
+const PULL_DIA=30,PULL10_DIA=270,PITY_E=10,PITY_L=40;
+const ATT=[{c:10},{c:15},{t:1},{c:20},{d:10},{c:30},{d:30}];
+const SHOP={
+  starter:{name:'첫 만남 패키지',price:3300,once:true,give:{d:100,t:3,inv:{churu:1}},desc:'💎100 + 🎫3 + 츄르 1개 · 한 번만 살 수 있어요',img:'t_churu'},
+  monthly:{name:'월간 간식 카드',price:5500,give:{d:150},monthly:30,desc:'바로 💎150, 그리고 30일 동안 접속하면 매일 💎20',img:'t_jerky'},
+  offer:{name:'레벨 업 기념 패키지',price:2500,give:{d:60,t:2,inv:{salmon:1}},desc:'💎60 + 🎫2 + 연어 큐브 1개',img:'t_salmon'},
+  d30:{name:'💎 30',price:1200,give:{d:30},first:true},
+  d160:{name:'💎 160',price:5900,give:{d:160},first:true},
+  d340:{name:'💎 340',price:11000,give:{d:340},first:true},
+  d1000:{name:'💎 1,000',price:33000,give:{d:1000},first:true},
+};
+const COSMETICS={hat:{name:'파티 모자',d:80},crown:{name:'꽃 화관',d:120},glasses:{name:'선글라스',d:100}};
+const BONE_SHOP={biscuit:10,apple:8,potato:12};
+const BONE_TICKET=80;
 const dayNo=d=>Math.floor((d.getTime()-d.getTimezoneOffset()*6e4)/864e5);
 const PICKUP=['salmon','liver'][Math.floor(dayNo(new Date())/7)%2];   // 주마다 바뀌는 픽업
 
@@ -771,6 +829,36 @@ function makeTreat(key){
   }
   return g;
 }
+function makeCosmetic(k){
+  const g=new THREE.Group(),M=(c,r=.5,o={})=>new THREE.MeshPhysicalMaterial({color:c,roughness:r,...o});
+  const put=(geo,mat,pos,scl=[1,1,1],rot=[0,0,0],par=g)=>{const m=new THREE.Mesh(geo,mat);m.position.set(...pos);m.scale.set(...scl);m.rotation.set(...rot);m.castShadow=true;par.add(m);return m};
+  if(k==='hat'){
+    const tex=canvasTex(128,128,(c,w,h)=>{c.fillStyle='#ff8fb1';c.fillRect(0,0,w,h);c.fillStyle='#ffe066';for(let i=-2;i<8;i++){c.save();c.translate(i*24,0);c.rotate(.5);c.fillRect(0,-20,10,200);c.restore()}});
+    const hg=new THREE.Group();hg.position.set(.06,.25,-.01);hg.rotation.z=-.35;g.add(hg);
+    put(new THREE.ConeGeometry(.085,.2,32,1,true),M('#ffffff',.6,{map:tex,side:THREE.DoubleSide}),[0,.1,0],[1,1,1],[0,0,0],hg);
+    put(SPH_LO,M('#7ec8e3',.8,{sheen:1,sheenColor:new THREE.Color('#fff')}),[0,.205,0],[.03,.03,.03],[0,0,0],hg);
+    put(new THREE.TorusGeometry(.083,.012,8,32),M('#7ec8e3',.8),[0,.002,0],[1,1,1],[Math.PI/2,0,0],hg);
+  }else if(k==='crown'){
+    const ring=new THREE.Group();ring.position.set(0,.19,-.02);ring.rotation.x=.22;g.add(ring);
+    const cols=['#ff9eb5','#fff2a8','#ffffff','#ffb38a','#c9a7ff'];
+    for(let i=0;i<11;i++){const a=i/11*TAU,x=Math.cos(a)*.2,z=Math.sin(a)*.19;
+      put(SPH_LO,M(cols[i%5],.6,{sheen:.6,sheenColor:new THREE.Color('#fff')}),[x,0,z],[.032,.022,.032],[0,0,0],ring);
+      put(SPH_LO,M('#ffd23f',.5),[x,.016,z],[.011,.011,.011],[0,0,0],ring);
+      put(SPH_LO,M('#6fb36a',.6),[Math.cos(a+.3)*.2,-.006,Math.sin(a+.3)*.19],[.022,.006,.012],[0,-a,0],ring)}
+  }else if(k==='glasses'){
+    const lens=M('#1f2230',.08,{clearcoat:1,metalness:.2}),fr=M('#ff6f91',.35);
+    for(const sx of[-1,1]){put(new THREE.CylinderGeometry(.052,.052,.012,28),lens,[sx*.105,.04,.272],[1,1,.85],[Math.PI/2,0,0]);
+      put(new THREE.TorusGeometry(.053,.008,8,28),fr,[sx*.105,.04,.276],[1,.85,1]);
+      put(new THREE.BoxGeometry(.012,.01,.17),fr,[sx*.165,.05,.19],[1,1,1],[0,sx*.25,0])}
+    put(new THREE.BoxGeometry(.06,.01,.01),fr,[0,.055,.285]);
+  }
+  return g;
+}
+function equipCosmetic(){
+  if(!D)return;const old=D.head.userData.cos;if(old){D.head.remove(old);disposeObj(old)}
+  const k=save.cos.eq;if(!COSMETICS[k]){D.head.userData.cos=null;return}
+  const c=makeCosmetic(k);D.head.add(c);D.head.userData.cos=c;
+}
 function disposeObj(o){o.traverse(x=>{if(x.isMesh){if(![SPH,SPH_LO].includes(x.geometry))x.geometry.dispose();x.material.dispose()}})}
 
 // ---------- 입자 (하트, 반짝이, 물방울, 비눗방울) ----------
@@ -805,9 +893,10 @@ const P={fx:.5,fy:.5,nx:0,ny:0,inside:false,pressing:false,dx:0,dy:0,speed:0};
 let t=0,tool='hand',light='day',D=null,B=null,cells=[],curTreat='biscuit';
 // 저장 (이 브라우저에만): 뼈다귀, 간식 보관함, 견종별 애정 경험치
 const SAVE_KEY='dog-petting-save';
-const defaultSave=()=>({coins:0,free:1,inv:{biscuit:2},xp:{},fav:{},welcomed:false,pityE:0,pityL:0,att:{last:'',streak:0}});
+const defaultSave=()=>({coins:0,dia:0,tix:0,free:1,inv:{biscuit:2},seen:{biscuit:true},xp:{},fav:{},welcomed:false,pityE:0,pityL:0,att:{last:'',streak:0},bought:{},monthly:{until:0,last:0},cos:{own:[],eq:''},offer:{until:0},boneTix:0});
 let save=defaultSave();
 try{const v=JSON.parse(localStorage.getItem(SAVE_KEY));if(v&&typeof v==='object')save=Object.assign(defaultSave(),v)}catch{}
+for(const k in save.inv)if(save.inv[k]>0)save.seen[k]=true;
 function persist(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(save))}catch{}}
 const level=()=>lvOf(save.xp[B.key]||0);
 
@@ -864,7 +953,7 @@ function buildDog(key){
   const sc=B.s*(B.len*.5+.6);room.blob.scale.set(1.9*sc,1.5*sc,1);room.blob.rotation.z=-DOG_ROT;
   if(S.eat){scene.remove(S.eat.fly);disposeObj(S.eat.fly)}
   Object.assign(S,{h:.15,annoy:0,found:false,favTime:0,kick:0,shake:0,shakeOff:0,sneeze:0,yaw:0,pitch:0,eat:null,full:.3,begSaid:false});
-  dirty();
+  dirty();equipCosmetic();
 }
 function dirty(){
   const r=rng((Math.random()*1e9)|0),vis=cells.filter(c=>c.vis);
@@ -1161,14 +1250,26 @@ function onEat(k){
 function addXP(n){
   const k=B.key,old=save.xp[k]||0,nv=Math.max(0,old+n);save.xp[k]=nv;persist();
   if(lvOf(nv)>lvOf(old)){const l=lvOf(nv);S.levelFx=2.2;sfx.chime();for(let i=0;i<30;i++)sparkle();for(let i=0;i<10;i++)heart(true);
-    setTimeout(()=>say(`애정 레벨 업! 이제 우리는 '${TITLES[l]}'!`,3.8),bubbleT>0?900:0);addCoins(20)}
+    setTimeout(()=>say(`애정 레벨 업! 이제 우리는 '${TITLES[l]}'!`,3.8),bubbleT>0?900:0);addCoins(20);grant({d:10});
+    if(l>=2&&!offerActive()){save.offer.until=Date.now()+864e5;persist();renderCoins()}}
 }
-const gachaBtnSub=document.getElementById('gachaBtnSub'),gachaBtn=document.getElementById('openGacha');
-function addCoins(n){
-  if(!n)return;save.coins=Math.max(0,save.coins+n);persist();renderCoins();
-  const el=document.createElement('span');el.className='coin-pop';el.textContent='+'+n+' 🦴';gachaBtn.append(el);setTimeout(()=>el.remove(),1200);
+const gachaBtnSub=document.getElementById('gachaBtnSub'),gachaBtn=document.getElementById('openGacha'),walletEl=document.getElementById('wallet');
+function popAt(el,txt){const p=document.createElement('span');p.className='coin-pop';p.textContent=txt;el.append(p);setTimeout(()=>p.remove(),1200)}
+function addCoins(n){if(!n)return;save.coins=Math.max(0,save.coins+n);persist();renderCoins();popAt(gachaBtn,'+'+n+' 🦴')}
+function grant(g){
+  if(g.c)save.coins+=g.c;if(g.d)save.dia+=g.d;if(g.t)save.tix+=g.t;
+  for(const[k,n]of Object.entries(g.inv||{})){save.inv[k]=(save.inv[k]||0)+n;save.seen[k]=true}
+  persist();renderCoins();renderTreats();
 }
-function renderCoins(){gachaBtnSub.innerHTML=(save.free>0?`<span class="free">무료 ${save.free}회</span> `:'')+`🦴 ${save.coins}`}
+const fmtGive=g=>[g.c&&`🦴${g.c}`,g.d&&`💎${g.d}`,g.t&&`🎫${g.t}`].filter(Boolean).join(' + ');
+function renderCoins(){
+  const w=`<span>🦴 ${save.coins}</span><span>💎 ${save.dia}</span><span>🎫 ${save.tix}</span>`;
+  walletEl.innerHTML=w;const sw=document.getElementById('sWallet');if(sw)sw.innerHTML=w;
+  gachaBtnSub.innerHTML=save.free>0?`<span class="free">무료 ${save.free}회</span>`:save.tix>0?`<span class="free">🎫 ${save.tix}</span>`:'';
+  const dot=document.getElementById('shopDot');if(dot)dot.hidden=!(offerActive()||monthlyClaimable());
+}
+const offerActive=()=>save.offer.until>Date.now()&&!save.bought['offer'+save.offer.until];
+const monthlyClaimable=()=>save.monthly.until>=dayNo(new Date())&&save.monthly.last<dayNo(new Date());
 // 말풍선
 const bubbleEl=document.getElementById('bubble');let bubbleT=0;
 function say(text,dur=2.6){bubbleEl.textContent=text;bubbleEl.classList.remove('pop');void bubbleEl.offsetWidth;bubbleEl.classList.add('show','pop');bubbleT=dur}
@@ -1365,6 +1466,10 @@ function makeThumbs(){
     cam.position.set(0,.06,.24);cam.lookAt(0,0,0);if(key==='churu'){g.rotation.set(.6,-1.1,.3)}
     r2.render(sc,cam);out['t_'+key]=r2.domElement.toDataURL();sc.remove(g);disposeObj(g);
   }
+  for(const key of Object.keys(COSMETICS)){
+    const g=makeCosmetic(key);g.rotation.set(.35,-.5,0);sc.add(g);const bx=new THREE.Box3().setFromObject(g),c=bx.getCenter(V3()),r=bx.getSize(V3()).length();
+    cam.position.copy(c).add(V3(0,r*.25,r*1.35));cam.lookAt(c);r2.render(sc,cam);out['c_'+key]=r2.domElement.toDataURL();sc.remove(g);disposeObj(g);
+  }
   pm.dispose();r2.dispose();r2.forceContextLoss();
   return out;
 }
@@ -1402,7 +1507,9 @@ const treatsEl=document.getElementById('treats');
 function renderTreats(){
   treatsEl.textContent='';
   for(const[key,T]of Object.entries(TREATS)){
-    const n=save.inv[key]||0,btn=document.createElement('button');
+    const n=save.inv[key]||0,btn=document.createElement('button'),known=save.seen[key];
+    if(!known){btn.className='treat unknown';btn.textContent='?';btn.setAttribute('aria-label','아직 모르는 간식');btn.title='아직 모르는 간식';
+      btn.addEventListener('click',()=>say('아직 모르는 간식이에요. 뽑기에서 만나 봐요!'));treatsEl.append(btn);continue}
     btn.className='treat'+(n?'':' empty');btn.style.setProperty('--rc',RARITY[T.r].col);
     if(thumbs['t_'+key])btn.style.backgroundImage=`url(${thumbs['t_'+key]})`;
     btn.setAttribute('aria-pressed',String(tool==='treat'&&curTreat===key));
@@ -1416,10 +1523,7 @@ function renderTreats(){
 const gDlg=document.getElementById('gacha'),gPull=document.getElementById('gPull'),gPull10=document.getElementById('gPull10'),gRes=document.getElementById('gResults'),gNote=document.getElementById('gNote'),machine=document.getElementById('machine');
 {const globe=document.getElementById('globe'),cols=['#ff8fa3','#ffd166','#7ec8e3','#b39cff','#9be29b','#ffb38a'],r=rng(8);
   for(let i=0;i<16;i++){const c=document.createElement('i');c.style.cssText=`--c:${cols[i%6]};left:${8+r()*104}px;top:${44+r()*72}px;transform:rotate(${r()*360}deg)`;globe.append(c)}}
-{const rows=Object.entries(TREATS).map(([k,T])=>{const R0=RARITY[T.r],cnt=Object.values(TREATS).filter(x=>x.r===T.r).length;
-  const pr=T.r==='epic'?R0.p*(k===PICKUP?.7:.3):R0.p/cnt;
-  return`<tr><td><span class="rk" style="--rc:${R0.col}">${R0.name}</span> ${T.name}${k===PICKUP?' (픽업)':''}</td><td>${(pr*100).toFixed(1)}%</td></tr>`});
-  document.getElementById('gOdds').innerHTML=rows.join('')}
+
 function pickRarity(min){
   const order=['common','rare','epic','legend'],ok=order.slice(order.indexOf(min));
   const tot=ok.reduce((a,k)=>a+RARITY[k].p,0);let x=Math.random()*tot;
@@ -1440,36 +1544,49 @@ function pullOnce(){
 }
 let pulling=false;
 function updateGacha(){
-  const free=save.free>0;
-  gPull.innerHTML=free?`무료로 뽑기<small>간식 3개 · 남은 무료 ${save.free}회</small>`:`🦴 ${PULL_COST} · 1회<small>간식 3개</small>`;
-  gPull10.innerHTML=`🦴 ${PULL10_COST} · 10회<small>간식 30개 · 10% 할인</small>`;
-  gPull.disabled=pulling||(!free&&save.coins<PULL_COST);gPull10.disabled=pulling||save.coins<PULL10_COST;
-  gNote.textContent=`가진 뼈다귀 ${save.coins}개 · 쓰다듬기, 씻기기, 애정 레벨 업, 출석으로 모여요`;
+  const free=save.free>0,tix=save.tix>0;
+  gPull.innerHTML=free?`무료로 뽑기<small>간식 3개 · 남은 무료 ${save.free}회</small>`:tix?`🎫 1장 · 1회<small>간식 3개 · 뽑기권 ${save.tix}장</small>`:`💎 ${PULL_DIA} · 1회<small>간식 3개</small>`;
+  gPull10.innerHTML=`💎 ${PULL10_DIA} · 10회<small>간식 30개 · 10% 할인</small>`;
+  const can1=free||tix||save.dia>=PULL_DIA,can10=save.dia>=PULL10_DIA;
+  gPull.disabled=pulling||!can1;gPull10.disabled=pulling||!can10;
+  document.getElementById('gCharge').hidden=can1&&can10;
+  gNote.textContent=`💎 ${save.dia} · 🎫 ${save.tix} · 다이아는 상점에서, 뽑기권은 출석과 뼈다귀 상점에서 받을 수 있어요`;
   document.getElementById('gPity').innerHTML=`에픽 이상 확정까지 <b>${PITY_E-save.pityE}회</b> · 전설 확정까지 <b>${PITY_L-save.pityL}회</b>`;
-  const T=TREATS[PICKUP];
-  document.getElementById('gBanner').innerHTML=`${thumbs['t_'+PICKUP]?`<img alt="" src="${thumbs['t_'+PICKUP]}" style="--rc:${RARITY[T.r].col}">`:''}<div><b>이번 주 픽업 · ${T.name}</b><br>에픽이 나오면 70% 확률로 ${T.name}이에요. 매주 월요일에 바뀌어요.</div>`;
+  const known=save.seen[PICKUP],T=TREATS[PICKUP];
+  document.getElementById('gBanner').innerHTML=known&&thumbs['t_'+PICKUP]
+    ?`<img alt="" src="${thumbs['t_'+PICKUP]}" style="--rc:${RARITY[T.r].col}"><div><b>이번 주 픽업 · ${T.name}</b><br>에픽 간식이 나오면 대부분 ${T.name}이에요. 매주 월요일에 바뀌어요.</div>`
+    :`<div class="treat unknown" style="width:44px;height:44px;flex:none">?</div><div><b>이번 주 픽업 · 비밀의 에픽 간식</b><br>이번 주에 더 잘 나오는 에픽 간식이 있어요. 매주 월요일에 바뀌어요.</div>`;
   const a=save.att,att=document.getElementById('att');att.textContent='';
   ATT.forEach((r,i)=>{const li=document.createElement('li');const got=i<a.streak;li.className=(got?'got':'')+(i===a.streak-1&&a.last===String(dayNo(new Date()))?' today':'');
-    li.innerHTML=`${i+1}일<b>${r==='free'?'무료뽑기':'🦴'+r}</b>`;att.append(li)});
+    li.innerHTML=`${i+1}일<b>${fmtGive(r)}</b>`;att.append(li)});
   document.getElementById('attDay').textContent=`· ${a.streak}일째`;
 }
 function doPull(times){
-  const free=times===1&&save.free>0,cost=times===1?PULL_COST:PULL10_COST;
-  if(pulling||(!free&&save.coins<cost))return;
-  if(free)save.free--;else save.coins-=cost;
+  if(pulling)return;
+  if(times===1){if(save.free>0)save.free--;else if(save.tix>0)save.tix--;else if(save.dia>=PULL_DIA)save.dia-=PULL_DIA;else return}
+  else{if(save.dia<PULL10_DIA)return;save.dia-=PULL10_DIA}
   const got=[];for(let i=0;i<times;i++)got.push(...pullOnce());
-  for(const k of got)save.inv[k]=(save.inv[k]||0)+1;persist();
-  pulling=true;updateGacha();gRes.textContent='';gRes.classList.toggle('many',times>1);machine.classList.add('shake');sfx.blip('square',300,600,.5,.05);
+  const isNew=k=>!save.seen[k];const fresh=new Set(got.filter(isNew));
+  for(const k of got){save.inv[k]=(save.inv[k]||0)+1;save.seen[k]=true}persist();
+  pulling=true;updateGacha();renderCoins();gRes.textContent='';gRes.classList.toggle('many',times>1);machine.classList.add('shake');sfx.blip('square',300,600,.5,.05);
   setTimeout(()=>{
     machine.classList.remove('shake');
     const order=['legend','epic','rare','common'];
     const list=times===1?got.map(k=>[k,1]):Object.entries(got.reduce((m,k)=>(m[k]=(m[k]||0)+1,m),{})).sort((a,b)=>order.indexOf(TREATS[a[0]].r)-order.indexOf(TREATS[b[0]].r));
-    list.forEach(([k,n],i)=>{const T=TREATS[k],R0=RARITY[T.r],c=document.createElement('div');c.className='g-card';
-      c.style.setProperty('--rc',R0.col);c.style.setProperty('--d',(i*(times>1?.12:.28))+'s');
-      c.innerHTML=`${thumbs['t_'+k]?`<img alt="" src="${thumbs['t_'+k]}">`:''}<div class="n"></div><div class="r">${R0.name}${n>1?` <span class="x">×${n}</span>`:''}</div>`;c.querySelector('.n').textContent=T.name;gRes.append(c);
-      setTimeout(()=>{sfx.blip('triangle',700+i*120,1000+i*150,.18,.1);if(T.r==='legend'||T.r==='epic')sfx.chime()},i*(times>1?120:280))});
-    if(got.includes('churu'))setTimeout(()=>say('츄르다!!! 꼬리가 프로펠러가 됐어요!',3.5),600);
-    pulling=false;updateGacha();renderTreats();renderCoins();
+    const step=times>1?.16:.32;
+    list.forEach(([k,n],i)=>{
+      const T=TREATS[k],R0=RARITY[T.r],c=document.createElement('div');
+      c.className='g-card mystery';c.style.setProperty('--d',(i*step*.5)+'s');c.innerHTML='<div class="q">?</div>';gRes.append(c);
+      // ? 상자가 열리며 공개
+      setTimeout(()=>{
+        c.className='g-card revealed';c.style.setProperty('--rc',R0.col);
+        c.innerHTML=`${thumbs['t_'+k]?`<img alt="" src="${thumbs['t_'+k]}">`:''}<div class="n"></div><div class="r">${R0.name}${n>1?` <span class="x">×${n}</span>`:''}</div>${fresh.has(k)?'<span class="new">NEW</span>':''}`;
+        c.querySelector('.n').textContent=T.name;
+        sfx.blip('triangle',700+i*120,1000+i*150,.18,.1);if(T.r==='legend'||T.r==='epic')sfx.chime();
+      },(reduce.matches?0:700)+i*step*1000);
+    });
+    if(got.includes('churu'))setTimeout(()=>say('츄르다!!! 꼬리가 프로펠러가 됐어요!',3.5),900+list.length*step*1000);
+    setTimeout(()=>{pulling=false;updateGacha();renderTreats()},(reduce.matches?0:700)+list.length*step*1000);
   },reduce.matches?50:900);
 }
 gPull.addEventListener('click',()=>doPull(1));
@@ -1479,11 +1596,61 @@ function checkAttendance(){
   const today=dayNo(new Date()),a=save.att,last=+a.last||0;
   if(last===today)return null;
   a.streak=last===today-1&&a.streak<7?a.streak+1:1;a.last=String(today);
-  const r=ATT[a.streak-1];if(r==='free')save.free++;else save.coins+=r;persist();
-  return`출석 ${a.streak}일째! ${r==='free'?'무료 뽑기 1회':'뼈다귀 '+r+'개'}를 받았어요`;
+  const r=ATT[a.streak-1];grant(r);
+  let msg=`출석 ${a.streak}일째! ${fmtGive(r)} 받았어요`;
+  if(save.monthly.until>=today&&save.monthly.last<today){save.monthly.last=today;grant({d:20});msg+=` · 월간 카드 💎20 (남은 ${save.monthly.until-today}일)`}
+  persist();return msg;
 }
 gachaBtn.addEventListener('click',()=>{gRes.textContent='';updateGacha();try{gDlg.showModal()}catch{gDlg.setAttribute('open','')}});
 document.getElementById('gClose').addEventListener('click',()=>gDlg.close());
+document.getElementById('gCharge').addEventListener('click',()=>{gDlg.close();openShop()});
+{const rows=Object.entries(TREATS).map(([k,T])=>{const R0=RARITY[T.r],cnt=Object.values(TREATS).filter(x=>x.r===T.r).length;
+  const pr=T.r==='epic'?R0.p*(k===PICKUP?.7:.3):R0.p/cnt;
+  return`<tr><td><span class="rk" style="--rc:${R0.col}">${R0.name}</span> ${save.seen[k]?T.name:'???'}${k===PICKUP?' (픽업)':''}</td><td>${(pr*100).toFixed(1)}%</td></tr>`});
+  document.getElementById('gOdds').innerHTML=rows.join('')}
+// ---------- 상점 ----------
+const sDlg=document.getElementById('shop'),shopBody=document.getElementById('shopBody');
+const won=n=>'₩'+n.toLocaleString('ko-KR');
+function buyBtn(label,ok,onBuy){
+  const b=document.createElement('button');b.className='s-buy';b.textContent=label;b.disabled=!ok;let armed=0;
+  b.addEventListener('click',()=>{if(!armed){armed=setTimeout(()=>{armed=0;b.classList.remove('sure');b.textContent=label},3000);b.classList.add('sure');b.textContent='한 번 더 눌러 구매';return}
+    clearTimeout(armed);armed=0;onBuy();sfx.chime();renderShop()});
+  return b;
+}
+function item(o){
+  const d=document.createElement('div');d.className='s-item'+(o.wide?' wide':'')+(o.hot?' hot':'');
+  d.innerHTML=`${o.tag?`<span class="tag">${o.tag}</span>`:''}${o.img?`<img alt="" src="${o.img}">`:''}<div><div class="t"></div><div class="d"></div></div>`;
+  d.querySelector('.t').textContent=o.title;d.querySelector('.d').textContent=o.desc||'';d.append(o.btn);return d;
+}
+function section(title,items,grid){const s=document.createElement('section');s.className='s-sec';s.innerHTML=`<h3></h3>`;s.firstChild.textContent=title;
+  const g=document.createElement('div');g.className=grid?'s-grid':'s-grid';items.forEach(i=>g.append(i));s.append(g);return s}
+function renderShop(){
+  renderCoins();shopBody.textContent='';const today=dayNo(new Date()),img=k=>thumbs[k]||'';
+  const rec=[];
+  if(offerActive()){const left=Math.max(0,save.offer.until-Date.now()),h=Math.floor(left/36e5),m=Math.floor(left%36e5/6e4),P0=SHOP.offer;
+    rec.push(item({wide:1,hot:1,tag:`${h}시간 ${m}분 남음`,img:img(P0.img),title:P0.name,desc:P0.desc,btn:buyBtn(won(P0.price),true,()=>{save.bought['offer'+save.offer.until]=true;grant(P0.give);say('와, 연어 냄새가 나요!')})}))}
+  if(!save.bought.starter){const P0=SHOP.starter;rec.push(item({wide:1,hot:1,tag:'추천',img:img(P0.img),title:P0.name,desc:P0.desc,btn:buyBtn(won(P0.price),true,()=>{save.bought.starter=true;grant(P0.give)})}))}
+  {const P0=SHOP.monthly,on=save.monthly.until>=today;
+    rec.push(item({wide:1,img:img(P0.img),title:P0.name,desc:on?`사용 중 · ${save.monthly.until-today}일 남음 · 접속하면 매일 💎20`:P0.desc,
+      btn:monthlyClaimable()?buyBtn('오늘 💎20 받기',true,()=>{save.monthly.last=today;grant({d:20})}):buyBtn(on?'연장 '+won(P0.price):won(P0.price),true,()=>{
+        save.monthly.until=Math.max(save.monthly.until,today-1)+P0.monthly;grant(P0.give);if(save.monthly.last<today){save.monthly.last=today;grant({d:20})}})}))}
+  shopBody.append(section('추천',rec));
+  shopBody.append(section('다이아',['d30','d160','d340','d1000'].map(id=>{const P0=SHOP[id],first=!save.bought[id];
+    return item({tag:first?'첫 구매 2배':'',title:first?`${P0.name} + 보너스 💎${P0.give.d}`:P0.name,desc:'',btn:buyBtn(won(P0.price),true,()=>{save.bought[id]=true;grant({d:P0.give.d*(first?2:1)})})})})));
+  shopBody.append(section('꾸미기',Object.entries(COSMETICS).map(([k,C])=>{const own=save.cos.own.includes(k),eq=save.cos.eq===k;
+    return item({img:img('c_'+k),title:C.name,desc:own?(eq?'착용 중':'가지고 있어요'):`💎 ${C.d}`,
+      btn:own?Object.assign(document.createElement('button'),{className:'s-buy',textContent:eq?'벗기':'착용',onclick:()=>{save.cos.eq=eq?'':k;persist();equipCosmetic();if(!eq)say('어때요? 잘 어울려요?');renderShop()}})
+        :buyBtn(`💎 ${C.d}`,save.dia>=C.d,()=>{save.dia-=C.d;save.cos.own.push(k);save.cos.eq=k;persist();equipCosmetic();say('새 옷이다! 어때요?')})})})));
+  const bone=Object.entries(BONE_SHOP).filter(([k])=>save.seen[k]).map(([k,c])=>item({img:img('t_'+k),title:TREATS[k].name,desc:`🦴 ${c}`,
+    btn:buyBtn(`🦴 ${c}`,save.coins>=c,()=>{save.coins-=c;grant({inv:{[k]:1}})})}));
+  bone.push(item({title:'뽑기권 1장',desc:save.boneTix===today?'오늘은 이미 샀어요. 내일 다시 와요':`🦴 ${BONE_TICKET} · 하루 1번`,
+    btn:buyBtn(`🦴 ${BONE_TICKET}`,save.coins>=BONE_TICKET&&save.boneTix!==today,()=>{save.coins-=BONE_TICKET;save.boneTix=today;grant({t:1})})}));
+  shopBody.append(section('뼈다귀 상점',bone));
+}
+function openShop(){renderShop();try{sDlg.showModal()}catch{sDlg.setAttribute('open','')}}
+document.getElementById('openShop').addEventListener('click',openShop);
+document.getElementById('sClose').addEventListener('click',()=>sDlg.close());
+sDlg.addEventListener('click',e=>{if(e.target===sDlg)sDlg.close()});
 gDlg.addEventListener('click',e=>{if(e.target===gDlg)gDlg.close()});
 const lightBtn=document.getElementById('lightToggle');
 const SUN='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>';
